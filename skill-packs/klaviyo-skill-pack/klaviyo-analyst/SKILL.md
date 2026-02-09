@@ -102,6 +102,92 @@ Ask me questions like:
 - "Help me set up a sunset flow to clean my list"
 - "Plan a Black Friday email/SMS campaign calendar"
 
+## Analysis Examples
+
+For complete analysis patterns, worked examples with sample output, and use cases, see [EXAMPLES.md](EXAMPLES.md).
+
+## Scripts
+
+The skill includes utility scripts for data fetching and analysis:
+
+### Fetch Klaviyo Data
+```bash
+# List all flows
+python scripts/klaviyo_client.py --resource flows
+
+# List campaigns as table
+python scripts/klaviyo_client.py --resource campaigns --format table
+
+# Get flow performance report
+python scripts/klaviyo_client.py --resource report --report-type flow --id FLOW_ID
+
+# Export metrics to file
+python scripts/klaviyo_client.py --resource metrics --output metrics.json
+```
+
+### Analyze and Generate Reports
+```bash
+# Full account audit
+python scripts/analyze.py --analysis-type full-audit
+
+# Flow gap analysis
+python scripts/analyze.py --analysis-type flow-audit
+
+# Segment health check
+python scripts/analyze.py --analysis-type segment-health
+
+# Campaign performance comparison
+python scripts/analyze.py --analysis-type campaign-comparison --days 30
+
+# Deliverability diagnostic
+python scripts/analyze.py --analysis-type deliverability
+
+# Revenue attribution
+python scripts/analyze.py --analysis-type revenue-attribution
+```
+
+The scripts handle API authentication, data fetching, and analysis. I'll interpret the results and provide actionable recommendations.
+
+## Troubleshooting
+
+**Authentication Error**: Verify that:
+- `KLAVIYO_API_KEY` is set as an environment variable or in a `.env` file
+- The key starts with `pk_` (private API key, not public)
+- The key has read scopes: `profiles:read`, `flows:read`, `campaigns:read`, `segments:read`, `lists:read`, `metrics:read`
+
+**No Data Returned**: Check that:
+- The API key is associated with the correct Klaviyo account
+- The account has active flows, campaigns, or segments to analyze
+- Filters are correctly formatted (e.g., `equals(status,"live")`)
+
+**Rate Limit Errors**: The SDK handles retries automatically (up to 3 retries with 60s max delay). If you still hit limits:
+- Reduce concurrent requests
+- Add delays between sequential calls
+- Check `RateLimit-Remaining` header
+
+**Import Errors**: Install required packages:
+```bash
+pip install klaviyo-api python-dotenv pandas
+```
+
+## Security Notes
+
+- **Never hardcode** API keys in code or commit them to version control
+- Store keys in environment variables or `.env` files
+- Add `.env` to `.gitignore`
+- Use **read-only scopes** for analyst tasks — no write access needed
+- Rotate API keys periodically in Klaviyo Settings
+
+## Data Privacy
+
+This skill accesses aggregated marketing data only. It does not:
+- Access personally identifiable information (PII) beyond email/profile aggregates
+- Store Klaviyo data persistently
+- Share data with external services
+- Modify your Klaviyo configuration (read-only operations)
+
+All data is processed locally and used only to generate recommendations during the conversation.
+
 For detailed Klaviyo data model, flow builder reference, segmentation conditions, deliverability, and SMS reference, see [REFERENCE.md](REFERENCE.md).
 
 For API integration, SDK usage, and developer patterns, use the **klaviyo-developer** skill.

@@ -1,0 +1,6 @@
+# Klaviyo Developer Skill Dependencies
+# Install with: pip install -r requirements.txt
+
+klaviyo-api>=9.0.0
+python-dotenv>=1.0.0
+pandas>=2.0.0

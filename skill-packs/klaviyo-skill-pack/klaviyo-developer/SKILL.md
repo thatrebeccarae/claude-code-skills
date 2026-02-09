@@ -127,6 +127,101 @@ Ask me questions like:
 - "Design a data pipeline to export Klaviyo data to BigQuery"
 - "Help me migrate from Klaviyo v1/v2 API to the current API"
 
+## Integration Examples
+
+For complete integration patterns, worked examples with sample output, and code snippets, see [EXAMPLES.md](EXAMPLES.md).
+
+## Scripts
+
+The skill includes utility scripts for API interaction and integration management:
+
+### Developer Client
+```bash
+# Track a custom event
+python scripts/klaviyo_client.py --action track-event \
+    --email user@example.com --event "Placed Order" \
+    --properties '{"value": 99.99, "OrderId": "ORD-123"}'
+
+# Upsert a profile
+python scripts/klaviyo_client.py --action upsert-profile \
+    --email user@example.com \
+    --properties '{"first_name": "Jane", "loyalty_tier": "Gold"}'
+
+# List catalog items
+python scripts/klaviyo_client.py --action catalog-items --format table
+
+# Export profiles to CSV
+python scripts/klaviyo_client.py --action export-profiles \
+    --max-pages 10 --format csv --output profiles.csv
+```
+
+### Developer Tools
+```bash
+# Integration health check
+python scripts/dev_tools.py --tool health-check
+
+# Validate event tracking
+python scripts/dev_tools.py --tool validate-events \
+    --events "Placed Order,Started Checkout,Viewed Product"
+
+# Test webhook endpoint
+python scripts/dev_tools.py --tool test-webhook \
+    --webhook-url https://example.com/webhooks/klaviyo
+
+# Import profiles from CSV
+python scripts/dev_tools.py --tool import-csv \
+    --file contacts.csv --list-id LIST_ID
+
+# Export data with pagination
+python scripts/dev_tools.py --tool export-data \
+    --resource profiles --max-records 5000 --output profiles.csv
+```
+
+The scripts handle API authentication, rate limiting, and JSON:API formatting. I'll help interpret results and provide implementation guidance.
+
+## Troubleshooting
+
+**Authentication Error**: Verify that:
+- `KLAVIYO_API_KEY` is set as an environment variable or in a `.env` file
+- The key starts with `pk_` (private API key, not public)
+- The key has the required scopes for your operation (e.g., `events:write` for tracking, `profiles:write` for imports)
+
+**Rate Limit Errors (429)**: The SDK handles retries automatically (up to 3 retries with 60s max delay). If you still hit limits:
+- Queue and throttle bulk operations (max 10 req/s for imports)
+- Check `RateLimit-Remaining` header proactively
+- Implement exponential backoff with jitter for raw HTTP
+
+**Bulk Import Errors**: Check that:
+- Batch size does not exceed 10,000 profiles per job
+- Email or phone is provided for each profile (at least one identifier)
+- CSV column names match expected field names
+
+**Import Errors**: Install required packages:
+```bash
+pip install klaviyo-api python-dotenv pandas
+```
+
+## Security Notes
+
+- **Never hardcode** API keys in code or commit them to version control
+- Store keys in environment variables or `.env` files
+- Add `.env` to `.gitignore`
+- Use **minimum required scopes** — only enable write access where needed
+- Rotate API keys periodically in Klaviyo Settings
+- For OAuth integrations, store client secrets securely and refresh tokens before expiry
+
+## Data Privacy
+
+This skill interacts with the Klaviyo API for integration development. When using write operations:
+- Validate data before sending to avoid corrupting profile records
+- Never log or store API keys, webhook secrets, or PII in plain text
+- Use idempotency keys to prevent duplicate events
+- Implement webhook signature verification to prevent spoofing
+- Follow GDPR/CCPA requirements when handling profile data
+- Use the Data Privacy Deletion endpoint for right-to-erasure requests
+
+All operations are performed via the official Klaviyo API with proper authentication.
+
 For detailed API endpoint reference, code patterns, authentication, and architecture diagrams, see [REFERENCE.md](REFERENCE.md).
 
 For marketing strategy, flow optimization, and campaign auditing, use the **klaviyo-analyst** skill.
