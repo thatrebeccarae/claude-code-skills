@@ -28,6 +28,15 @@ except ImportError:
     sys.exit(1)
 
 
+def _safe_output_path(path: str) -> str:
+    """Validate output path does not escape working directory."""
+    resolved = os.path.realpath(path)
+    cwd = os.path.realpath(os.getcwd())
+    if not resolved.startswith(cwd + os.sep) and resolved != cwd:
+        raise ValueError(f"Output path must be within working directory: {cwd}")
+    return resolved
+
+
 class AnalyticsAnalyzer:
     """Performs analysis on Google Analytics data."""
 
@@ -444,14 +453,18 @@ def main():
 
         # Write output
         if args.output:
-            with open(args.output, "w") as f:
+            safe_path = _safe_output_path(args.output)
+            with open(safe_path, "w", encoding="utf-8") as f:
                 f.write(output)
             print(f"Analysis saved to {args.output}", file=sys.stderr)
         else:
             print(output)
 
-    except Exception as e:
+    except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception:
+        print("Error: Analysis failed. Check credentials and property ID.", file=sys.stderr)
         sys.exit(1)
 
 

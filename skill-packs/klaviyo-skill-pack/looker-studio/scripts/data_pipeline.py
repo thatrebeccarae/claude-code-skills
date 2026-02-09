@@ -33,11 +33,10 @@ try:
     import gspread
     from google.oauth2.service_account import Credentials
     from dotenv import load_dotenv
-    import pandas as pd
-except ImportError as e:
-    print(f"Error: Required package not installed: {e}", file=sys.stderr)
+except ImportError:
+    print("Error: Required packages not installed.", file=sys.stderr)
     print(
-        "Install with: pip install gspread google-auth python-dotenv pandas",
+        "Install with: pip install gspread google-auth python-dotenv",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -574,8 +573,11 @@ Examples:
 
         print(json.dumps(result, indent=2))
 
-    except Exception as e:
+    except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception:
+        print("Error: Pipeline operation failed. Check credentials and spreadsheet ID.", file=sys.stderr)
         sys.exit(1)
 
 

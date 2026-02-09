@@ -26,10 +26,29 @@ from typing import Dict, List, Optional
 try:
     from klaviyo_api import KlaviyoAPI
     from dotenv import load_dotenv
-except ImportError as e:
-    print(f"Error: Required package not installed: {e}", file=sys.stderr)
+except ImportError:
+    print("Error: Required packages not installed.", file=sys.stderr)
     print("Install with: pip install klaviyo-api python-dotenv", file=sys.stderr)
     sys.exit(1)
+
+
+def _safe_output_path(path: str) -> str:
+    """Validate output path does not escape working directory."""
+    resolved = os.path.realpath(path)
+    cwd = os.path.realpath(os.getcwd())
+    if not resolved.startswith(cwd + os.sep) and resolved != cwd:
+        raise ValueError(f"Output path must be within working directory: {cwd}")
+    return resolved
+
+
+def _safe_input_file(path: str) -> str:
+    """Validate input file path: must be .csv and exist."""
+    resolved = os.path.realpath(path)
+    if not os.path.exists(resolved):
+        raise FileNotFoundError(f"File not found: {path}")
+    if not resolved.lower().endswith(".csv"):
+        raise ValueError("Input file must be a .csv file")
+    return resolved
 
 
 class KlaviyoDevClient:
@@ -56,8 +75,8 @@ class KlaviyoDevClient:
 
         try:
             self.client = KlaviyoAPI(api_key, max_delay=60, max_retries=3)
-        except Exception as e:
-            raise RuntimeError(f"Failed to initialize Klaviyo client: {e}")
+        except Exception:
+            raise RuntimeError("Failed to initialize Klaviyo client. Check your API key.")
 
     def track_event(
         self,
@@ -83,8 +102,8 @@ class KlaviyoDevClient:
         try:
             response = self.client.Events.create_event(body)
             return {"status": "success", "event": event_name, "email": email}
-        except Exception as e:
-            raise RuntimeError(f"Failed to track event: {e}")
+        except Exception:
+            raise RuntimeError("Failed to track event. Check your API key and event data.")
 
     def upsert_profile(
         self,
@@ -108,8 +127,8 @@ class KlaviyoDevClient:
         try:
             response = self.client.Profiles.create_profile(body)
             return self._parse_jsonapi_response(response)
-        except Exception as e:
-            raise RuntimeError(f"Failed to upsert profile: {e}")
+        except Exception:
+            raise RuntimeError("Failed to upsert profile. Check your API key and profile data.")
 
     def bulk_import(
         self, profiles: List[Dict], list_id: Optional[str] = None
@@ -170,8 +189,8 @@ class KlaviyoDevClient:
                 "job_id": result.get("id") if isinstance(result, dict) else None,
                 "profiles_submitted": len(profiles),
             }
-        except Exception as e:
-            raise RuntimeError(f"Failed to submit bulk import: {e}")
+        except Exception:
+            raise RuntimeError("Failed to submit bulk import. Check your API key and profile data.")
 
     def get_import_job_status(self, job_id: str) -> Dict:
         """
@@ -186,8 +205,8 @@ class KlaviyoDevClient:
         try:
             response = self.client.Profiles.get_bulk_profile_import_job(job_id)
             return self._parse_jsonapi_response(response)
-        except Exception as e:
-            raise RuntimeError(f"Failed to get import job status: {e}")
+        except Exception:
+            raise RuntimeError("Failed to get import job status. Check job ID and API key.")
 
     def get_catalog_items(self, filter_str: Optional[str] = None) -> List[Dict]:
         """
@@ -206,8 +225,8 @@ class KlaviyoDevClient:
 
             response = self.client.Catalogs.get_catalog_items(**kwargs)
             return self._parse_jsonapi_response(response)
-        except Exception as e:
-            raise RuntimeError(f"Failed to fetch catalog items: {e}")
+        except Exception:
+            raise RuntimeError("Failed to fetch catalog items. Check your API key and catalog scopes.")
 
     def create_catalog_item(self, item_data: Dict) -> Dict:
         """
@@ -252,8 +271,8 @@ class KlaviyoDevClient:
         try:
             response = self.client.Catalogs.create_catalog_item(body)
             return self._parse_jsonapi_response(response)
-        except Exception as e:
-            raise RuntimeError(f"Failed to create catalog item: {e}")
+        except Exception:
+            raise RuntimeError("Failed to create catalog item. Check your API key and item data.")
 
     def export_profiles(
         self, page_size: int = 100, max_pages: Optional[int] = None
@@ -319,9 +338,9 @@ class KlaviyoDevClient:
                 if not cursor:
                     break
 
-            except Exception as e:
+            except Exception:
                 raise RuntimeError(
-                    f"Failed to export profiles (page {page_count + 1}): {e}"
+                    "Failed to export profiles. Check your API key and profile scopes."
                 )
 
         return profiles
@@ -336,8 +355,8 @@ class KlaviyoDevClient:
         try:
             response = self.client.Metrics.get_metrics()
             return self._parse_jsonapi_response(response)
-        except Exception as e:
-            raise RuntimeError(f"Failed to fetch metrics: {e}")
+        except Exception:
+            raise RuntimeError("Failed to fetch metrics. Check your API key and metrics scopes.")
 
     def _parse_jsonapi_response(self, response) -> List[Dict]:
         """Flatten JSON:API envelope into simple dictionaries."""
@@ -536,7 +555,8 @@ Examples:
                 parser.error("--file is required for bulk-import")
             # Read CSV
             profiles = []
-            with open(args.file, "r") as f:
+            safe_file = _safe_input_file(args.file)
+            with open(safe_file, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     profiles.append(dict(row))
@@ -573,14 +593,18 @@ Examples:
 
         # Write output
         if args.output:
-            with open(args.output, "w") as f:
+            safe_path = _safe_output_path(args.output)
+            with open(safe_path, "w", encoding="utf-8") as f:
                 f.write(output)
             print(f"Data saved to {args.output}", file=sys.stderr)
         else:
             print(output)
 
-    except Exception as e:
+    except (ValueError, FileNotFoundError) as e:
         print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception:
+        print("Error: Operation failed. Check your API key and network connection.", file=sys.stderr)
         sys.exit(1)
 
 

@@ -27,12 +27,56 @@ import hashlib
 import hmac
 from typing import Dict, List, Optional
 from datetime import datetime
+import ipaddress
+from urllib.parse import urlparse
 
 try:
     from klaviyo_client import KlaviyoDevClient
 except ImportError:
     print("Error: klaviyo_client.py not found in the same directory", file=sys.stderr)
     sys.exit(1)
+
+
+def _safe_output_path(path: str) -> str:
+    """Validate output path does not escape working directory."""
+    resolved = os.path.realpath(path)
+    cwd = os.path.realpath(os.getcwd())
+    if not resolved.startswith(cwd + os.sep) and resolved != cwd:
+        raise ValueError(f"Output path must be within working directory: {cwd}")
+    return resolved
+
+
+def _safe_input_file(path: str) -> str:
+    """Validate input file path: must be .csv and exist."""
+    resolved = os.path.realpath(path)
+    if not os.path.exists(resolved):
+        raise FileNotFoundError(f"File not found: {path}")
+    if not resolved.lower().endswith(".csv"):
+        raise ValueError("Input file must be a .csv file")
+    return resolved
+
+
+def _validate_webhook_url(url: str) -> str:
+    """Validate webhook URL is not targeting internal/private networks."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ("https",):
+        raise ValueError("Webhook URL must use HTTPS")
+    hostname = parsed.hostname or ""
+    if hostname in ("localhost", "127.0.0.1", "0.0.0.0", "::1", ""):
+        raise ValueError("Webhook URL cannot target localhost")
+    # Check for private/reserved IP ranges
+    try:
+        ip = ipaddress.ip_address(hostname)
+        if ip.is_private or ip.is_reserved or ip.is_loopback or ip.is_link_local:
+            raise ValueError("Webhook URL cannot target private/reserved IP addresses")
+    except ValueError as e:
+        if "private" in str(e).lower() or "reserved" in str(e).lower() or "localhost" in str(e).lower():
+            raise
+        # hostname is a domain name, not an IP — that's fine
+    # Block cloud metadata endpoints
+    if hostname == "169.254.169.254":
+        raise ValueError("Webhook URL cannot target cloud metadata endpoints")
+    return url
 
 
 class KlaviyoDevTools:
@@ -63,11 +107,11 @@ class KlaviyoDevTools:
                 "status": "pass",
                 "detail": "Successfully connected to Klaviyo API",
             })
-        except Exception as e:
+        except Exception:
             results["checks"].append({
                 "check": "API Connectivity",
                 "status": "fail",
-                "detail": f"Failed to connect: {e}",
+                "detail": "Failed to connect. Check API key and network connection.",
             })
             results["status"] = "unhealthy"
             return results
@@ -80,11 +124,11 @@ class KlaviyoDevTools:
                 "status": "pass",
                 "detail": "profiles:read scope verified",
             })
-        except Exception as e:
+        except Exception:
             results["checks"].append({
                 "check": "Profile Read Scope",
                 "status": "fail",
-                "detail": f"profiles:read may not be enabled: {e}",
+                "detail": "profiles:read may not be enabled. Check API key scopes.",
             })
 
         # Check 3: Metrics availability
@@ -128,11 +172,11 @@ class KlaviyoDevTools:
                     "detail": f"All {len(essential_events)} essential events present",
                 })
 
-        except Exception as e:
+        except Exception:
             results["checks"].append({
                 "check": "Metrics Available",
                 "status": "fail",
-                "detail": str(e),
+                "detail": "Failed to retrieve metrics. Check API key scopes.",
             })
 
         # Check 4: Catalog access
@@ -144,11 +188,11 @@ class KlaviyoDevTools:
                 "status": "pass",
                 "detail": f"catalogs:read verified ({item_count} items found)",
             })
-        except Exception as e:
+        except Exception:
             results["checks"].append({
                 "check": "Catalog Access",
                 "status": "warning",
-                "detail": f"catalogs:read may not be enabled: {e}",
+                "detail": "catalogs:read may not be enabled. Check API key scopes.",
             })
 
         # Set overall status
@@ -210,6 +254,10 @@ class KlaviyoDevTools:
         Returns:
             Dictionary with test results
         """
+        url = _validate_webhook_url(url)
+        if not secret:
+            secret = os.environ.get("KLAVIYO_WEBHOOK_SECRET")
+
         import urllib.request
         import urllib.error
 
@@ -254,15 +302,15 @@ class KlaviyoDevTools:
         except urllib.error.HTTPError as e:
             results["status"] = "fail"
             results["response_code"] = e.code
-            results["error"] = str(e)
+            results["error"] = "HTTP error received from webhook endpoint"
 
-        except urllib.error.URLError as e:
+        except urllib.error.URLError:
             results["status"] = "fail"
-            results["error"] = f"Connection failed: {e.reason}"
+            results["error"] = "Connection failed. Check the webhook URL and network."
 
-        except Exception as e:
+        except Exception:
             results["status"] = "fail"
-            results["error"] = str(e)
+            results["error"] = "Webhook test failed. Check the URL and try again."
 
         return results
 
@@ -281,7 +329,8 @@ class KlaviyoDevTools:
         """
         # Read CSV
         profiles = []
-        with open(filepath, "r") as f:
+        safe_file = _safe_input_file(filepath)
+        with open(safe_file, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 profiles.append(dict(row))
@@ -315,14 +364,14 @@ class KlaviyoDevTools:
                     "status": "submitted",
                     "job_id": result.get("job_id"),
                 })
-            except Exception as e:
+            except Exception:
                 results["batches"].append({
                     "batch": batch_num,
                     "profiles": len(batch),
                     "status": "failed",
-                    "error": str(e),
+                    "error": "Batch import failed. Check API key and profile data.",
                 })
-                results["errors"].append(str(e))
+                results["errors"].append("Batch import failed. Check API key and profile data.")
 
         # Summary
         successful = sum(
@@ -389,7 +438,8 @@ class KlaviyoDevTools:
                     if key not in all_keys:
                         all_keys.append(key)
 
-            with open(output_path, "w", newline="") as f:
+            safe_path = _safe_output_path(output_path)
+            with open(safe_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(
                     f, fieldnames=all_keys, extrasaction="ignore"
                 )
@@ -578,7 +628,7 @@ Examples:
             if not args.webhook_url:
                 parser.error("--webhook-url is required for test-webhook")
             result = tools.test_webhook(
-                args.webhook_url, secret=args.webhook_secret
+                args.webhook_url, secret=args.webhook_secret or os.environ.get("KLAVIYO_WEBHOOK_SECRET")
             )
 
         elif args.tool == "import-csv":
@@ -600,14 +650,18 @@ Examples:
 
         # Write output
         if args.output and args.tool != "export-data":
-            with open(args.output, "w") as f:
+            safe_path = _safe_output_path(args.output)
+            with open(safe_path, "w", encoding="utf-8") as f:
                 f.write(output)
             print(f"Results saved to {args.output}", file=sys.stderr)
         else:
             print(output)
 
-    except Exception as e:
+    except (ValueError, FileNotFoundError) as e:
         print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception:
+        print("Error: Operation failed. Check your API key and network connection.", file=sys.stderr)
         sys.exit(1)
 
 

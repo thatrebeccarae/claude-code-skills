@@ -15,8 +15,10 @@ Usage:
 
 import os
 import sys
+import stat
 import subprocess
 import argparse
+import getpass
 from pathlib import Path
 
 
@@ -245,7 +247,9 @@ class SkillPackSetup:
                         continue
 
                 print(f"\n  {Colors.BLUE}{var_config['instructions']}{Colors.END}")
-                value = self._prompt(f"  {var_config['prompt']}")
+                # Use masked input for secrets (API keys, tokens)
+                is_secret = any(kw in var_name.upper() for kw in ["KEY", "TOKEN", "SECRET"])
+                value = self._prompt(f"  {var_config['prompt']}", secret=is_secret)
 
                 if not value:
                     self._print_warning(f"  Skipping {skill_config['label']} (no key provided)")
@@ -279,7 +283,9 @@ class SkillPackSetup:
                 lines.append(f"{var_name}={value}\n")
 
             env_path.write_text("".join(lines))
-            self._print_success(f"  Created {skill_name}/.env")
+            # Restrict .env file to owner-only read/write (0600)
+            env_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+            self._print_success(f"  Created {skill_name}/.env (permissions: 0600)")
 
     def install_dependencies(self):
         """Install Python packages for configured skills."""
@@ -402,11 +408,14 @@ class SkillPackSetup:
     def _print_error(self, message: str):
         print(f"  {Colors.RED}ERROR{Colors.END} {message}")
 
-    def _prompt(self, message: str, default: str = "") -> str:
-        """Input with optional default."""
+    def _prompt(self, message: str, default: str = "", secret: bool = False) -> str:
+        """Input with optional default. Uses masked input for secrets."""
         suffix = f" [{default}]" if default else ""
         try:
-            value = input(f"{message}{suffix}: ").strip()
+            if secret:
+                value = getpass.getpass(f"{message}{suffix}: ").strip()
+            else:
+                value = input(f"{message}{suffix}: ").strip()
             return value or default
         except (EOFError, KeyboardInterrupt):
             print()

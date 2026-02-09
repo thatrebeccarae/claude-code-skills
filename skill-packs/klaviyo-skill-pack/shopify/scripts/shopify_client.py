@@ -32,9 +32,18 @@ try:
     import requests
     from dotenv import load_dotenv
 except ImportError as e:
-    print(f"Error: Required package not installed: {e}", file=sys.stderr)
+    print("Error: Required packages not installed.", file=sys.stderr)
     print("Install with: pip install requests python-dotenv", file=sys.stderr)
     sys.exit(1)
+
+
+def _safe_output_path(path: str) -> str:
+    """Validate output path does not escape working directory."""
+    resolved = os.path.realpath(path)
+    cwd = os.path.realpath(os.getcwd())
+    if not resolved.startswith(cwd + os.sep) and resolved != cwd:
+        raise ValueError(f"Output path must be within working directory: {cwd}")
+    return resolved
 
 
 class ShopifyAnalyticsClient:
@@ -226,7 +235,7 @@ class ShopifyAnalyticsClient:
             except requests.exceptions.RequestException as e:
                 if attempt == retries - 1:
                     raise RuntimeError(
-                        f"Shopify API request failed after {retries} attempts: {e}"
+                        f"Shopify API request failed after {retries} attempts. Check store URL and access token."
                     )
                 time.sleep(2 ** attempt)
 
@@ -372,14 +381,18 @@ Examples:
 
         # Write output
         if args.output:
-            with open(args.output, "w") as f:
+            safe_path = _safe_output_path(args.output)
+            with open(safe_path, "w", encoding="utf-8") as f:
                 f.write(output)
             print(f"Data saved to {args.output}", file=sys.stderr)
         else:
             print(output)
 
-    except Exception as e:
+    except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception:
+        print("Error: Failed to fetch Shopify data. Check store URL and access token.", file=sys.stderr)
         sys.exit(1)
 
 

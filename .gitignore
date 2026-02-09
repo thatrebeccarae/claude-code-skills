@@ -4,6 +4,11 @@
 !.env.example
 *.key
 *.pem
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
+*-credentials.json
 
 # OS files
 .DS_Store
@@ -23,3 +28,6 @@ node_modules/
 __pycache__/
 *.pyc
 .venv/
+*.egg-info/
+dist/
+build/
