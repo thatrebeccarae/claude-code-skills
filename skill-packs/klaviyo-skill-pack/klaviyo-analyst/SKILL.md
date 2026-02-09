@@ -1,11 +1,13 @@
 ---
-name: klaviyo
-description: Klaviyo email and SMS marketing platform expertise. Audit flows, segments, campaigns, deliverability, and revenue attribution. Use when the user asks about Klaviyo, email marketing automation, SMS marketing, customer segmentation, flow optimization, or lifecycle marketing.
+name: klaviyo-analyst
+description: Klaviyo marketing operations and analyst expertise. Audit flows, segments, campaigns, deliverability, and revenue attribution. Use when the user asks about Klaviyo marketing strategy, email/SMS automation, customer segmentation, flow optimization, or lifecycle marketing. For API integration, SDK, webhook, or developer questions, see the klaviyo-developer skill.
 ---
 
-# Klaviyo Marketing Platform
+# Klaviyo Marketing Analyst
 
-Expert-level guidance for Klaviyo email and SMS marketing — auditing, building, and optimizing flows, segments, campaigns, and integrations.
+Expert-level guidance for Klaviyo email and SMS marketing from the **marketing operations and analyst perspective** — auditing, building, and optimizing flows, segments, campaigns, and integrations.
+
+> For API integration, SDK usage, event tracking implementation, webhooks, and developer patterns, see the **klaviyo-developer** skill.
 
 ## Core Capabilities
 
@@ -81,7 +83,7 @@ When asked to audit a Klaviyo account:
 ### E-commerce Platforms
 - **Shopify**: Native integration, syncs orders/products/customers automatically. Use Shopify-specific metrics (Placed Order, Started Checkout, Viewed Product).
 - **WooCommerce / BigCommerce / Magento**: Similar event sync, may need plugin configuration.
-- **Custom platforms**: Use Klaviyo API v2 for event tracking and profile management.
+- **Custom platforms**: Coordinate with developers using the **klaviyo-developer** skill for API event tracking and profile management.
 
 ### Common Integration Points
 - Review platforms (Yotpo, Judge.me, Stamped) for post-purchase review flows
@@ -100,4 +102,6 @@ Ask me questions like:
 - "Help me set up a sunset flow to clean my list"
 - "Plan a Black Friday email/SMS campaign calendar"
 
-For detailed Klaviyo API reference, data model, and advanced configurations, see [REFERENCE.md](REFERENCE.md).
+For detailed Klaviyo data model, flow builder reference, segmentation conditions, deliverability, and SMS reference, see [REFERENCE.md](REFERENCE.md).
+
+For API integration, SDK usage, and developer patterns, use the **klaviyo-developer** skill.
