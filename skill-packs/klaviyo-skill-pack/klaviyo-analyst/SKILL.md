@@ -40,6 +40,24 @@ Expert-level guidance for Klaviyo email and SMS marketing from the **marketing o
 - Build custom dashboards for flow revenue, campaign ROI, list growth
 - Benchmark KPIs against industry standards
 
+### Event Schema Auditing
+- Inventory all tracked metrics by source (built-in integration, custom API, Klaviyo-internal, forms)
+- Identify duplicate/redundant events, unused events, and missing standard events
+- Assess event property structures for segmentation and personalization accessibility
+- Diagnose nested object limitations blocking flow splits and segment conditions
+
+### Integration Health Review
+- Audit active integrations (e-commerce, review platforms, loyalty, ads)
+- Identify stale/dead integrations and orphaned event sources
+- Assess flow trigger architecture: direct metric triggers (robust) vs segment-entry triggers via API-synced properties (brittle)
+- Evaluate catalog sync health: product coverage, variant handling, freshness
+
+### Profile Data Utilization Analysis
+- Map profile properties: what's collected vs what's used in segmentation/personalization
+- Identify stale calculated properties (set once, never updated)
+- Flag properties on events but not synced to profiles (limits segmentation)
+- Recommend property flattening strategies for nested data accessibility
+
 ## Key Benchmarks
 
 | Metric | Good | Great | Warning |
@@ -65,18 +83,108 @@ Expert-level guidance for Klaviyo email and SMS marketing from the **marketing o
 9. **Birthday/Anniversary** — triggers on date property
 10. **VIP/Loyalty** — triggers on high-CLV segment entry
 
-## Workflow: Full Klaviyo Audit
+## Workflow: Full Klaviyo Audit (4-Phase Deep Framework)
 
-When asked to audit a Klaviyo account:
+When asked to audit a Klaviyo account, follow this 4-phase framework:
 
-1. **Flow Inventory** — List all active flows, identify gaps from the essential checklist above
-2. **Flow Performance** — For each flow: revenue/recipient, conversion rate, open/click rates, timing between messages
-3. **Segment Health** — Review engagement tiers, suppression lists, segment overlap
-4. **Campaign Analysis** — Frequency, A/B test history, send-time optimization
-5. **Deliverability Check** — Bounce rates, complaint rates, authentication status
-6. **Integration Review** — E-commerce platform sync, review platform, loyalty program
-7. **Revenue Attribution** — Flow vs campaign revenue split, attribution window settings
-8. **Recommendations** — Prioritized by expected revenue impact (High/Medium/Low)
+### Phase 1: Status Inventory
+1. **List/Segment/Flow/Campaign Inventory** — Count and categorize all objects by status (live, draft, inactive)
+2. **Event Schema Inventory** — Pull all metrics, categorize by source (built-in, custom API, Klaviyo-internal, forms), flag zero-volume events
+3. **Integration Inventory** — List all active integrations, identify stale connections
+4. **Custom Profile Property Inventory** — Document all custom properties with types and usage
+
+### Phase 2: Configuration Audit
+5. **Per-Flow Configuration Teardown** — For each active flow:
+   - Trigger type and conditions
+   - Smart Send settings (on/off and implications)
+   - Exclusion filters (segment membership, event conditions)
+   - Timing between messages (compare to benchmarks)
+   - Branching logic (conditional splits, A/B splits)
+   - Flow duration (first message to last)
+6. **Campaign Targeting Audit** — Segment exclusivity, frequency capping, send-time optimization
+7. **A/B Testing Methodology Audit** — Univariate vs multivariate, KPI alignment, statistical significance practices
+8. **Deliverability Configuration** — Authentication (SPF/DKIM/DMARC), dedicated IP, warmup status
+
+### Phase 3: Data Structure Audit
+9. **Event Schema Health** — Check for duplicates, missing standard events, nested objects blocking segmentation
+10. **Profile Data Utilization** — What's collected vs what's used in segmentation/personalization
+11. **Catalog Sync Health** — Product feed freshness, coverage, variant handling
+
+### Phase 4: Strategic Recommendations
+12. **Three-Tier Recommendations** — For each finding:
+    - **Finding**: What's wrong + evidence from audit data
+    - **Recommendation**: What to do (client-facing, plain language)
+    - **Implementation Spec**: How to build it (internal SOW with triggers, filters, content brief, timing, testing plan)
+13. **Sequential Testing Plans** — Univariate A/B tests with stat sig framework
+14. **Quantified ROI** — Expected uplift % x current revenue baseline
+15. **Implementation Roadmap** — Phased timeline with dependencies mapped
+
+## Industry-Specific Benchmarks
+
+### B2B / Wholesale E-Commerce
+
+| Metric | Good | Great | Warning | Notes |
+|--------|------|-------|---------|-------|
+| Open Rate | 25-35% | 40%+ | <20% | Higher than DTC due to professional relevance |
+| Click Rate | 3-5% | 6%+ | <2% | Product-focused CTAs perform well |
+| CTOR | 10-15% | 18%+ | <8% | Key diagnostic — content relevance signal |
+| Flow Revenue % | 25-35% | 40%+ | <15% | Reorder flows are high-value in B2B |
+| Avg Order Value | Varies | — | — | Track by segment (industry, company size) |
+| Reorder Rate | 60-70% | 80%+ | <50% | Critical for consumable categories |
+
+### DTC (Direct-to-Consumer)
+
+| Metric | Good | Great | Warning |
+|--------|------|-------|---------|
+| Open Rate | 20-25% | 30%+ | <15% |
+| Click Rate | 2-3% | 4%+ | <1.5% |
+| Flow Revenue % | 30-40% | 50%+ | <20% |
+| Welcome Series Conv. | 3-5% | 8%+ | <2% |
+| Cart Recovery Rate | 5-10% | 15%+ | <3% |
+
+### Subscription / Recurring Revenue
+
+| Metric | Good | Great | Warning |
+|--------|------|-------|---------|
+| Churn Rate (monthly) | <5% | <3% | >8% |
+| Reactivation Rate | 5-10% | 15%+ | <3% |
+| Replenishment Flow Conv. | 8-12% | 15%+ | <5% |
+| Subscription Upgrade Rate | 3-5% | 8%+ | <1% |
+
+## SMS Platform Comparison Framework
+
+When evaluating Klaviyo SMS vs Attentive (common in audits):
+
+| Capability | Klaviyo SMS | Attentive |
+|------------|------------|-----------|
+| Email + SMS unified | Yes (native) | No (separate platform) |
+| Shared segments | Yes | Requires sync |
+| Unified attribution | Yes | Separate reporting |
+| Conversational SMS | Limited | Strong (two-way) |
+| Sign-up units | Basic (popup, form) | Advanced (two-tap, link-based) |
+| AI features | Predictive analytics, smart send time | AI journeys, smart sending |
+| Compliance | Built-in TCPA, quiet hours | Built-in + compliance team |
+| Cost | Included in Klaviyo plan (per SMS) | Separate platform fee + per SMS |
+| Best for | Unified email+SMS, simplicity | SMS-first strategy, high volume SMS |
+
+**Recommendation framework**: Use Klaviyo SMS when email is the primary channel and SMS is supplementary (most B2B and mid-market DTC). Consider Attentive when SMS is a primary revenue channel (high-frequency DTC, mobile-first brands).
+
+## Repeatable Audit Workflow (MCP Tool Sequence)
+
+When auditing an account via the Klaviyo MCP tools, follow this sequence:
+
+1. `klaviyo_get_account_details` — Account config, timezone, integrations
+2. `klaviyo_get_metrics` — Full event inventory (all metric names and IDs)
+3. `klaviyo_get_flows` — All flows with status
+4. `klaviyo_get_flow` (per flow) — Trigger details, actions, filters for each live flow
+5. `klaviyo_get_campaigns` — Recent campaigns with send dates
+6. `klaviyo_get_campaign_report` (per campaign) — Open/click/unsub/revenue metrics
+7. `klaviyo_get_flow_report` (per flow) — Revenue, conversion, engagement per flow
+8. `klaviyo_get_segments` + `klaviyo_get_segment` — Segment inventory and condition definitions
+9. `klaviyo_get_lists` — List inventory
+10. `klaviyo_get_catalog_items` — Catalog sync health check
+
+After data pull, analyze using the 4-Phase Deep Framework above.
 
 ## Integration Context
 
@@ -101,6 +209,8 @@ Ask me questions like:
 - "What A/B tests should I run on my abandoned cart flow?"
 - "Help me set up a sunset flow to clean my list"
 - "Plan a Black Friday email/SMS campaign calendar"
+- "Audit my event schema — are we tracking everything we need?"
+- "Give me a three-tier recommendation for fixing our click rates"
 
 ## Analysis Examples
 

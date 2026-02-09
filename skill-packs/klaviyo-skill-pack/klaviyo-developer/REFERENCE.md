@@ -656,3 +656,528 @@ All errors follow JSON:API format:
                                                            │  events) │
                                                            └──────────┘
 ```
+
+---
+
+## Standard Event Property Schemas
+
+Complete property schemas for standard e-commerce events. Use these as the reference when auditing event tracking or building custom integrations.
+
+### Placed Order
+
+The primary revenue event. Must include line items for product-level analytics and flow personalization.
+
+```json
+{
+  "data": {
+    "type": "event",
+    "attributes": {
+      "metric": {
+        "data": { "type": "metric", "attributes": { "name": "Placed Order" } }
+      },
+      "profile": {
+        "data": {
+          "type": "profile",
+          "attributes": {
+            "email": "customer@example.com",
+            "properties": { "first_name": "Jane", "last_name": "Doe" }
+          }
+        }
+      },
+      "properties": {
+        "$value": 149.99,
+        "OrderId": "ORD-12345",
+        "Categories": ["Electronics", "Accessories"],
+        "ItemNames": ["Wireless Headphones Pro", "Phone Case - Midnight"],
+        "Brands": ["AudioTech", "CaseCraft"],
+        "DiscountCode": "WELCOME10",
+        "DiscountValue": 15.00,
+        "Items": [
+          {
+            "ProductID": "PROD-001",
+            "SKU": "AT-WHP-001",
+            "ProductName": "Wireless Headphones Pro",
+            "Quantity": 1,
+            "ItemPrice": 89.99,
+            "RowTotal": 89.99,
+            "ProductURL": "https://example.com/products/wireless-headphones-pro",
+            "ImageURL": "https://example.com/images/headphones-pro.jpg",
+            "Categories": ["Electronics", "Audio"],
+            "Brand": "AudioTech"
+          },
+          {
+            "ProductID": "PROD-002",
+            "SKU": "CC-CASE-MID",
+            "ProductName": "Phone Case - Midnight",
+            "Quantity": 1,
+            "ItemPrice": 29.99,
+            "RowTotal": 29.99,
+            "ProductURL": "https://example.com/products/phone-case-midnight",
+            "ImageURL": "https://example.com/images/case-midnight.jpg",
+            "Categories": ["Accessories", "Cases"],
+            "Brand": "CaseCraft"
+          }
+        ],
+        "ItemCount": 3,
+        "ShippingMethod": "Standard",
+        "ShippingCost": 0.00,
+        "Tax": 12.00,
+        "Subtotal": 149.97,
+        "BillingAddress": {
+          "FirstName": "Jane",
+          "LastName": "Doe",
+          "City": "Austin",
+          "Region": "TX",
+          "Country": "US",
+          "Zip": "60601"
+        }
+      },
+      "unique_id": "ORD-12345",
+      "time": "2026-02-09T14:30:00Z"
+    }
+  }
+}
+```
+
+**Usage notes:**
+- `$value` is the revenue property Klaviyo uses for attribution and flow filters
+- `Items[]` array enables product-level recommendations in flow emails
+- `unique_id` = `OrderId` for idempotency (prevents duplicate order events)
+- `Categories` (top-level) = flattened list for segmentation (since `Items[].Categories` is nested and not accessible in segments)
+- `BillingAddress` is nested — accessible in templates but NOT in segments/splits
+
+### Started Checkout
+
+Triggers abandoned cart flows. Must include cart contents for personalization.
+
+```json
+{
+  "data": {
+    "type": "event",
+    "attributes": {
+      "metric": {
+        "data": { "type": "metric", "attributes": { "name": "Started Checkout" } }
+      },
+      "profile": {
+        "data": {
+          "type": "profile",
+          "attributes": { "email": "customer@example.com" }
+        }
+      },
+      "properties": {
+        "$value": 149.99,
+        "CheckoutURL": "https://example.com/checkout/abc123",
+        "ItemNames": ["Wireless Headphones Pro", "Phone Case - Midnight"],
+        "Categories": ["Electronics", "Accessories"],
+        "Items": [
+          {
+            "ProductID": "PROD-001",
+            "SKU": "AT-WHP-001",
+            "ProductName": "Wireless Headphones Pro",
+            "Quantity": 1,
+            "ItemPrice": 89.99,
+            "RowTotal": 89.99,
+            "ProductURL": "https://example.com/products/wireless-headphones-pro",
+            "ImageURL": "https://example.com/images/headphones-pro.jpg"
+          }
+        ],
+        "ItemCount": 3
+      },
+      "unique_id": "CHECKOUT-abc123"
+    }
+  }
+}
+```
+
+**Usage notes:**
+- `CheckoutURL` is critical for the abandoned cart email CTA
+- `$value` enables "cart value > $X" flow filters
+- `Items[]` enables dynamic product blocks in cart recovery emails
+- Deduplicate with `unique_id` = checkout session ID
+
+### Viewed Product
+
+Triggers browse abandonment flows. Lightweight event — no line items needed.
+
+```json
+{
+  "data": {
+    "type": "event",
+    "attributes": {
+      "metric": {
+        "data": { "type": "metric", "attributes": { "name": "Viewed Product" } }
+      },
+      "profile": {
+        "data": {
+          "type": "profile",
+          "attributes": { "email": "customer@example.com" }
+        }
+      },
+      "properties": {
+        "ProductName": "Wireless Headphones Pro",
+        "ProductID": "PROD-001",
+        "SKU": "AT-WHP-001",
+        "Categories": ["Electronics", "Audio"],
+        "Brand": "AudioTech",
+        "Price": 89.99,
+        "CompareAtPrice": 109.99,
+        "ImageURL": "https://example.com/images/headphones-pro.jpg",
+        "URL": "https://example.com/products/wireless-headphones-pro"
+      }
+    }
+  }
+}
+```
+
+**Usage notes:**
+- No `$value` — this isn't a revenue event
+- `URL` and `ImageURL` required for browse abandonment email personalization
+- `CompareAtPrice` enables "on sale" logic in flow templates
+- No `unique_id` — multiple views of the same product are expected
+- `Categories` at top level enables segment filters like "viewed product in Electronics category"
+
+### Added to Cart
+
+Tracks cart additions. Useful for cart-based flows when Started Checkout isn't tracked.
+
+```json
+{
+  "data": {
+    "type": "event",
+    "attributes": {
+      "metric": {
+        "data": { "type": "metric", "attributes": { "name": "Added to Cart" } }
+      },
+      "profile": {
+        "data": {
+          "type": "profile",
+          "attributes": { "email": "customer@example.com" }
+        }
+      },
+      "properties": {
+        "$value": 89.99,
+        "AddedItemProductName": "Wireless Headphones Pro",
+        "AddedItemProductID": "PROD-001",
+        "AddedItemSKU": "AT-WHP-001",
+        "AddedItemCategories": ["Electronics", "Audio"],
+        "AddedItemImageURL": "https://example.com/images/headphones-pro.jpg",
+        "AddedItemURL": "https://example.com/products/wireless-headphones-pro",
+        "AddedItemPrice": 89.99,
+        "AddedItemQuantity": 1,
+        "ItemNames": ["Wireless Headphones Pro", "Phone Case - Midnight"],
+        "Items": [
+          {
+            "ProductID": "PROD-001",
+            "ProductName": "Wireless Headphones Pro",
+            "Quantity": 1,
+            "ItemPrice": 89.99,
+            "ImageURL": "https://example.com/images/headphones-pro.jpg",
+            "URL": "https://example.com/products/wireless-headphones-pro"
+          },
+          {
+            "ProductID": "PROD-002",
+            "ProductName": "Phone Case - Midnight",
+            "Quantity": 1,
+            "ItemPrice": 29.99,
+            "ImageURL": "https://example.com/images/case-midnight.jpg",
+            "URL": "https://example.com/products/phone-case-midnight"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**Usage notes:**
+- `$value` = price of the added item (not total cart value)
+- `AddedItem*` properties describe the specific item added (top-level, segmentable)
+- `Items[]` = full current cart contents (for template rendering)
+- `ItemNames` = flattened array for segmentation
+
+### Order Completed / Fulfilled Order
+
+Triggers post-purchase flows (review requests, replenishment reminders).
+
+```json
+{
+  "data": {
+    "type": "event",
+    "attributes": {
+      "metric": {
+        "data": { "type": "metric", "attributes": { "name": "Fulfilled Order" } }
+      },
+      "profile": {
+        "data": {
+          "type": "profile",
+          "attributes": { "email": "customer@example.com" }
+        }
+      },
+      "properties": {
+        "$value": 149.99,
+        "OrderId": "ORD-12345",
+        "FulfillmentId": "SHIP-67890",
+        "TrackingNumber": "1Z999AA10123456784",
+        "TrackingURL": "https://tracking.example.com/1Z999AA10123456784",
+        "Carrier": "UPS",
+        "Items": [
+          {
+            "ProductID": "PROD-001",
+            "ProductName": "Wireless Headphones Pro",
+            "Quantity": 1,
+            "ItemPrice": 89.99
+          }
+        ]
+      },
+      "unique_id": "SHIP-67890"
+    }
+  }
+}
+```
+
+**Usage notes:**
+- Use as trigger for review request flows (with 7-14 day delay)
+- Use as trigger for replenishment flows (with product-specific delay)
+- `TrackingURL` enables shipping confirmation emails
+- `unique_id` = fulfillment ID (an order can have multiple fulfillments/shipments)
+
+### Cancelled Order
+
+Tracks order cancellations. Useful for re-engagement and save-the-sale flows.
+
+```json
+{
+  "data": {
+    "type": "event",
+    "attributes": {
+      "metric": {
+        "data": { "type": "metric", "attributes": { "name": "Cancelled Order" } }
+      },
+      "profile": {
+        "data": {
+          "type": "profile",
+          "attributes": { "email": "customer@example.com" }
+        }
+      },
+      "properties": {
+        "$value": 149.99,
+        "OrderId": "ORD-12345",
+        "Reason": "Customer requested",
+        "Items": [
+          {
+            "ProductID": "PROD-001",
+            "ProductName": "Wireless Headphones Pro",
+            "Quantity": 1,
+            "ItemPrice": 89.99
+          }
+        ]
+      },
+      "unique_id": "CANCEL-ORD-12345"
+    }
+  }
+}
+```
+
+**Usage notes:**
+- Use to suppress cancelled orders from post-purchase and review flows
+- `Reason` at top level enables flow splits by cancellation reason
+- `$value` = cancelled order value (useful for segment: "cancelled $500+ order")
+
+---
+
+## Nested Object Limitations & Workarounds
+
+Klaviyo's data model handles nested objects (arrays, sub-objects) differently depending on where you access them. This is the #1 source of "I track the data but can't use it" complaints.
+
+### Access Matrix
+
+| Data Location | Email/SMS Templates | Flow Conditional Splits | Flow Trigger Filters | Segments |
+|---------------|:-------------------:|:----------------------:|:-------------------:|:--------:|
+| Top-level string/number/boolean | Yes | Yes | Yes | Yes |
+| Top-level array (e.g., `ItemNames`) | Yes (loop) | Yes (`contains`) | Yes (`contains`) | Yes (`contains`) |
+| Nested object field (e.g., `Items[0].ProductName`) | Yes (loop) | **No** | **No** | **No** |
+| Nested object in nested object | Yes (deep loop) | **No** | **No** | **No** |
+| Profile property (string/number/boolean) | Yes | Yes | Yes | Yes |
+| Profile property (array) | Yes | Yes (`contains`) | Yes (`contains`) | Yes (`contains`) |
+| Profile property (object) | Yes (dot notation) | **No** | **No** | **No** |
+
+### Workaround Patterns
+
+**Pattern 1: Flatten arrays to comma-joined strings**
+```python
+# Instead of relying on Items[].Category for segmentation:
+properties["ItemCategories"] = ",".join(set(item["Category"] for item in items))
+# Now segment: "Placed Order where ItemCategories contains Electronics"
+```
+
+**Pattern 2: Promote key nested values to top-level**
+```python
+# Need to split flow by first item brand?
+properties["TopBrand"] = items[0]["Brand"] if items else ""
+properties["HasElectronics"] = any(
+    "Electronics" in item.get("Categories", []) for item in items
+)
+```
+
+**Pattern 3: Sync to profile for persistent segmentation**
+```python
+# Need to segment by "ever purchased Electronics"?
+# Track on profile, not just on event:
+profile_properties["purchased_categories"] = list(set(
+    existing_categories + new_order_categories
+))
+```
+
+**Pattern 4: Use "Update Profile Property" flow action**
+```
+Flow: Placed Order trigger
+  → Update Profile Property: "last_order_category" = {{ event.TopCategory }}
+  → Conditional Split: Profile "last_order_category" = "Electronics"
+```
+
+---
+
+## Custom Event Design Patterns (DTC / Subscription)
+
+Beyond standard Shopify events, these patterns cover subscription, loyalty, and advanced DTC workflows.
+
+### Account & Subscription Lifecycle Events
+
+```python
+# Account Created — new customer registration
+{
+    "name": "Account Created",
+    "properties": {
+        "account_id": "ACCT-12345",
+        "signup_channel": "Website",
+        "referral_source": "Instagram Ad",
+        "interests": ["Skincare", "Wellness"],
+        "quiz_completed": True,
+        "skin_type": "Combination",
+        "state": "CA"
+    }
+}
+
+# Subscription Started — recurring order activated
+{
+    "name": "Subscription Started",
+    "properties": {
+        "$value": 39.99,
+        "plan_name": "Monthly Essentials Box",
+        "frequency": "monthly",
+        "product_ids": ["PROD-100", "PROD-200"],
+        "payment_method": "Credit Card",
+        "account_id": "ACCT-12345"
+    }
+}
+
+# Subscription Cancelled — churn event
+{
+    "name": "Subscription Cancelled",
+    "properties": {
+        "plan_name": "Monthly Essentials Box",
+        "reason": "Too expensive",
+        "lifetime_charges": 6,
+        "lifetime_revenue": 239.94,
+        "account_id": "ACCT-12345"
+    }
+}
+```
+
+### Advanced Purchase Events
+
+```python
+# Wishlist Added — high-intent browsing signal
+{
+    "name": "Wishlist Added",
+    "properties": {
+        "ProductName": "Vitamin C Serum",
+        "ProductID": "PROD-300",
+        "Categories": ["Skincare", "Serums"],
+        "Price": 48.00,
+        "wishlist_count": 3,
+        "account_id": "ACCT-12345"
+    }
+}
+
+# Reorder Placed — repeat purchase (consumable)
+{
+    "name": "Reorder Placed",
+    "properties": {
+        "$value": 72.50,
+        "OrderId": "ORD-99887",
+        "days_since_last_order": 28,
+        "is_auto_reorder": False,
+        "reorder_items": ["Daily Moisturizer", "SPF 50 Sunscreen", "Lip Balm"],
+        "reorder_category": "Skincare",
+        "account_id": "ACCT-12345"
+    }
+}
+```
+
+### DTC Profile Properties for Segmentation
+
+```python
+# Sync these to profiles for advanced segmentation:
+profile_properties = {
+    # Customer identity
+    "customer_type": "Subscriber",
+    "interests": ["Skincare", "Wellness"],
+    "subscription_plan": "Monthly Essentials Box",
+    "account_tier": "VIP",                # Standard, VIP, Founding Member
+    "state": "CA",
+
+    # Purchase behavior
+    "first_order_date": "2024-03-15",
+    "last_order_date": "2026-01-28",
+    "lifetime_order_count": 18,
+    "avg_order_value": 72.50,
+    "lifetime_revenue": 1305.00,
+    "avg_days_between_orders": 31,
+
+    # Product affinity
+    "preferred_categories": ["Skincare", "Supplements"],
+    "purchased_brands": ["GlowLab", "VitaWell", "PureBlend"],
+
+    # Personalization
+    "skin_type": "Combination",
+    "quiz_score": 85,
+
+    # Engagement
+    "last_email_click_date": "2026-02-05",
+    "email_engagement_tier": "Active"
+}
+```
+
+### Segmentation Examples
+
+```
+# High-value customers for VIP flow
+Segment: "VIP Customers"
+Conditions:
+  - lifetime_revenue > 500 OR
+  - lifetime_order_count > 8 OR
+  - avg_order_value > 100
+
+# Reorder candidates (consumable replenishment)
+Segment: "Reorder - Skincare (30d)"
+Conditions:
+  - Has done "Placed Order" where Categories contains "Skincare"
+    at least 1 time in the last 180 days
+  - Has NOT done "Placed Order" in the last 25 days
+  - preferred_categories contains "Skincare"
+
+# Interest-based targeting
+Segment: "Wellness Enthusiasts"
+Conditions:
+  - interests contains "Wellness" OR
+  - preferred_categories contains "Supplements"
+  - Has done "Placed Order" at least 1 time (verified buyer)
+
+# At-risk high-value customers
+Segment: "At-Risk VIP"
+Conditions:
+  - lifetime_revenue > 300
+  - Has NOT done "Placed Order" in the last 60 days
+  - Has NOT done "Opened Email" in the last 30 days
+```

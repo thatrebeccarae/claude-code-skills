@@ -115,6 +115,136 @@ When building a custom Klaviyo integration:
 9. **Monitoring** — Log API errors, track event delivery rates, alert on failures
 10. **Testing & validation** — Verify events appear in Klaviyo, test flow triggers, validate profile data
 
+## Workflow: Integration Health Audit
+
+When auditing an existing Klaviyo integration for health and data quality:
+
+1. **Inventory active integrations** — List all configured integrations (built-in and custom). Identify active vs stale connections.
+2. **Map event sources** — For each metric in the account, identify its source (built-in integration, custom API, Klaviyo-internal, form). Flag metrics with zero recent volume.
+3. **Audit event schemas** — Pull property structures for key events (Placed Order, Started Checkout, Viewed Product, Added to Cart). Check for:
+   - Missing standard properties (e.g., `$value`, `ItemNames`, line items)
+   - Duplicate/redundant metrics (e.g., "Placed Order" and "Order Placed" from different sources)
+   - Inconsistent property naming (camelCase vs snake_case across events)
+4. **Check profile data pipeline** — Verify profile properties are being synced correctly. Look for:
+   - Properties set by API vs properties set by events
+   - Stale properties (set once, never updated)
+   - Properties used in segmentation vs properties sitting unused
+5. **Review catalog sync** — Verify product catalog is synced and fresh. Check:
+   - Total catalog items vs expected product count
+   - Last sync timestamp
+   - Variant coverage (are variants synced or just parent products?)
+   - Category structure completeness
+6. **Assess flow trigger architecture** — Map how flows are triggered:
+   - Direct metric triggers (robust) vs segment-entry triggers via API-synced properties (brittle)
+   - Single points of failure (if API sync breaks, do all flows stop?)
+   - Trigger redundancy and fallback patterns
+7. **Identify data accessibility gaps** — Check for data that exists in event payloads but isn't usable:
+   - Nested objects in event properties (can use in templates, cannot use in segments/splits)
+   - Properties available in events but not synced to profiles (can't segment on them)
+   - Events tracked but not used in any flow or segment
+8. **Produce integration health report** — Document findings with severity ratings:
+   - **Critical**: Integration failures, broken event tracking, data loss
+   - **High**: Missing standard events, duplicate metrics, flow trigger fragility
+   - **Medium**: Unused events, incomplete catalog, stale profile properties
+   - **Low**: Naming inconsistencies, optimization opportunities
+
+## Event Schema Best Practices
+
+### Property Naming Conventions
+- Use **PascalCase** for standard Klaviyo properties: `ProductName`, `ItemPrice`, `OrderId`
+- Use **snake_case** for custom properties: `business_type`, `account_id`, `reorder_count`
+- Never mix conventions within a single event — pick one and be consistent
+- Prefix custom properties to avoid collision with Klaviyo-reserved names
+
+### Required Properties by Event
+
+| Event | Required Properties | Revenue Property |
+|-------|-------------------|------------------|
+| Placed Order | `$value`, `OrderId`, `Items[]` (line items) | `$value` |
+| Started Checkout | `$value`, `CheckoutURL`, `Items[]` | `$value` |
+| Viewed Product | `ProductName`, `ProductID`, `URL`, `ImageURL` | — |
+| Added to Cart | `$value`, `AddedItemProductName`, `AddedItemProductID`, `Items[]` | `$value` |
+| Fulfilled Order | `$value`, `OrderId` | — |
+
+### Nesting Rules and Limitations
+
+Klaviyo handles nested objects differently depending on where you access them:
+
+| Context | Access Level | Example |
+|---------|-------------|---------|
+| **Email/SMS templates** | Full access via Jinja — can loop over arrays, access nested properties | `{% for item in event.Items %}{{ item.ProductName }}{% endfor %}` |
+| **Flow conditional splits** | Top-level properties ONLY — cannot access nested object fields | Can split on `event.OrderId`, cannot split on `event.Items[0].ProductName` |
+| **Segments** | Top-level properties ONLY — cannot filter by nested object fields | Can segment on "has done Placed Order where $value > 100", cannot segment on "where Items contains ProductName = X" |
+| **Flow triggers** | Top-level properties for trigger filters | Same as conditional splits |
+
+**Workaround for nested data**: If you need to segment or split on nested data, flatten it to top-level properties:
+```python
+# Instead of relying on Items[] array for segmentation:
+properties = {
+    "$value": 149.99,
+    "OrderId": "ORD-123",
+    "Items": [{"ProductName": "Wireless Headphones", "Category": "Electronics"}],
+    # Flatten for segmentation:
+    "ItemCategories": "Electronics,Accessories",  # Comma-joined for "contains" filter
+    "HasElectronics": True,                        # Boolean flag for split
+    "TopItemCategory": "Electronics"               # Top category for split
+}
+```
+
+### Custom Event Patterns (DTC / Subscription / Marketplace)
+
+Additional events beyond the standard Shopify/e-commerce schema:
+
+| Event Name | Trigger | Key Properties |
+|------------|---------|----------------|
+| `Account Created` | New account registered | `account_type`, `referral_source`, `signup_channel` |
+| `Subscription Started` | Recurring order activated | `$value`, `frequency`, `product_ids`, `plan_name` |
+| `Subscription Cancelled` | Recurring order stopped | `reason`, `plan_name`, `lifetime_charges` |
+| `Reorder Placed` | Repeat purchase of consumable | `$value`, `OrderId`, `days_since_last_order`, `reorder_items` |
+| `Wishlist Added` | Item saved for later | `ProductName`, `ProductID`, `Categories`, `Price` |
+| `Catalog Browsed` | Category/search activity | `category`, `search_term`, `results_count` |
+
+Sync key customer properties to profiles for segmentation:
+```python
+profile_properties = {
+    "customer_type": "Subscriber",
+    "interests": ["Skincare", "Wellness"],
+    "subscription_plan": "Monthly Box",
+    "account_tier": "VIP",
+    "first_order_date": "2024-03-15",
+    "lifetime_order_count": 8,
+    "avg_order_value": 72.50,
+    "preferred_categories": ["Skincare", "Supplements"]
+}
+```
+
+## Data Accessibility Diagnosis
+
+When data exists in Klaviyo but isn't usable where expected:
+
+### Symptoms
+- "We track [event] but can't segment on [property]"
+- "Flow split doesn't see the property we're sending"
+- "Profile has the data but segment doesn't pick it up"
+
+### Root Causes and Solutions
+
+| Symptom | Root Cause | Solution |
+|---------|-----------|----------|
+| Can't segment on event property | Property is nested inside an array/object | Flatten to top-level property on the event |
+| Can't split flow on event property | Property is nested | Flatten, or use profile property instead |
+| Segment doesn't match profiles | Property is on events, not profiles | Sync property to profile via API or "Update Profile Property" flow action |
+| Profile property exists but segment empty | Property value format mismatch (string "true" vs boolean `true`) | Standardize data types in API sync |
+| Event tracked but no flow triggers | Metric name mismatch (case-sensitive) | Verify exact metric name in Klaviyo matches API call |
+| Flow triggers but filter excludes everyone | Segment used as flow filter evaluates incorrectly | Check segment conditions — may reference stale or incorrectly-typed properties |
+
+### Diagnosis Workflow
+1. **Check metric exists**: Use GET `/metrics/` to verify the event name appears
+2. **Check event properties**: Use GET `/events/?filter=...` to pull recent events and inspect property structure
+3. **Check profile properties**: Use GET `/profiles/{id}/` to verify expected properties are on the profile
+4. **Test segment conditions**: Compare segment definition against actual profile data — look for type mismatches, case sensitivity issues
+5. **Test flow trigger**: Send a test event and trace whether the flow fires, where it stops, and why
+
 ## How to Use This Skill
 
 Ask me questions like:
@@ -126,6 +256,8 @@ Ask me questions like:
 - "How do I implement OAuth for a Klaviyo app?"
 - "Design a data pipeline to export Klaviyo data to BigQuery"
 - "Help me migrate from Klaviyo v1/v2 API to the current API"
+- "Audit my integration — are events structured correctly?"
+- "Why can't I segment on a property I'm tracking in events?"
 
 ## Integration Examples
 
