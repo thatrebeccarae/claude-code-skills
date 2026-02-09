@@ -6,14 +6,14 @@ A step-by-step guide to setting up the Klaviyo Skill Pack for Claude Code. No te
 
 This skill pack gives Claude Code deep expertise in the tools DTC e-commerce teams use every day:
 
-| Skill | What It Does |
-|-------|-------------|
-| **Klaviyo Analyst** | Audit your email/SMS marketing: flows, segments, campaigns, deliverability, revenue |
-| **Klaviyo Developer** | Build custom Klaviyo integrations: event tracking, webhooks, API patterns |
-| **Google Analytics** | Analyze GA4 data: traffic, engagement, conversions, content performance |
-| **Shopify** | Audit your Shopify store: orders, products, customers, conversion funnel |
-| **Looker Studio** | Build cross-platform dashboards with Klaviyo + Shopify + GA4 data |
-| **Pro Deck Builder** | Create polished PowerPoint presentations from your analysis |
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **Klaviyo Analyst** | Audit email/SMS flows, diagnose deliverability, benchmark campaign metrics, build segmentation strategies, produce implementation specs |
+| **Klaviyo Developer** | Design event schemas, build API integrations, handle webhooks, manage rate limits, audit data pipelines |
+| **Google Analytics** | Analyze GA4 traffic, identify conversion drop-offs, compare channels, review content performance |
+| **Shopify** | Audit store performance, analyze product velocity, review customer cohorts, optimize conversion funnels |
+| **Looker Studio** | Build cross-platform dashboards, push data to Google Sheets, design calculated fields, create report templates |
+| **Pro Deck Builder** | Create polished PowerPoint decks from any analysis, with dark/light modes and modern design |
 
 ## Prerequisites
 
@@ -119,7 +119,17 @@ pip install klaviyo-api python-dotenv pandas requests google-analytics-data \
     ShopifyAPI google-api-python-client google-auth gspread
 ```
 
-### Step 4: Verify Setup
+### Step 4: Install Skills into Claude Code
+
+Copy the skills to Claude Code's skill directory:
+
+```bash
+for skill in klaviyo-analyst klaviyo-developer google-analytics shopify looker-studio pro-deck-builder; do
+  cp -r "$skill" ~/.claude/skills/
+done
+```
+
+### Step 5: Verify Setup
 
 Test each skill's API connection:
 
@@ -134,9 +144,9 @@ python google-analytics/scripts/ga_client.py --days 7 --metrics sessions
 python looker-studio/scripts/data_pipeline.py --action list-templates
 ```
 
-If any command shows an error, check the Troubleshooting section below.
+For Klaviyo, the MCP server handles the connection. Verify with `/mcp` in Claude Code.
 
-### Step 5: Your First Audit
+### Step 6: Your First Audit
 
 Try a complete Shopify store audit:
 
@@ -149,7 +159,7 @@ Or ask Claude directly:
 "Audit my Shopify store and tell me what needs fixing"
 ```
 
-## Troubleshooting Common Issues
+## Troubleshooting
 
 ### "command not found: python"
 Python isn't in your system PATH. Try `python3` instead of `python`. On macOS, you may need to install Python:
@@ -157,7 +167,7 @@ Python isn't in your system PATH. Try `python3` instead of `python`. On macOS, y
 brew install python
 ```
 
-### "No module named 'dotenv'" or similar
+### "No module named 'dotenv'" or similar import error
 The required packages aren't installed. Run:
 ```bash
 pip install -r requirements.txt
@@ -181,41 +191,47 @@ Your `.env` file isn't configured. Copy the example and fill in your values:
 cp .env.example .env
 ```
 
+### Klaviyo MCP server not connecting
+1. Check that `KLAVIYO_API_KEY` is exported in your shell (`echo $KLAVIYO_API_KEY`)
+2. Verify `~/.mcp.json` has the klaviyo server entry (see [README.md](README.md))
+3. Restart Claude Code after changing MCP configuration
+4. Run `/mcp` in Claude Code to verify the server is connected
+
 ## What's in the Pack
 
 ```
 klaviyo-skill-pack/
-|- GETTING_STARTED.md          <- You are here
-|- README.md                   <- Overview and MCP setup
-|- scripts/setup.py            <- Interactive setup wizard
-|
-|- klaviyo-analyst/             <- Email/SMS marketing audit
-|  |- SKILL.md, REFERENCE.md, EXAMPLES.md
-|  |- scripts/ (klaviyo_client.py, analyze.py)
-|
-|- klaviyo-developer/           <- API integration & development
-|  |- SKILL.md, REFERENCE.md, EXAMPLES.md
-|  |- scripts/ (klaviyo_client.py, dev_tools.py)
-|
-|- google-analytics/            <- GA4 analytics
-|  |- SKILL.md, REFERENCE.md, EXAMPLES.md
-|  |- scripts/ (ga_client.py, analyze.py)
-|
-|- shopify/                     <- Shopify store analytics
-|  |- SKILL.md, REFERENCE.md, EXAMPLES.md
-|  |- scripts/ (shopify_client.py, analyze.py)
-|
-|- looker-studio/               <- Cross-platform dashboards
-|  |- SKILL.md, REFERENCE.md, EXAMPLES.md
-|  |- scripts/ (data_pipeline.py)
-|
-|- pro-deck-builder/            <- Presentation creation
-   |- SKILL.md, REFERENCE.md
+  GETTING_STARTED.md          <- You are here
+  README.md                   <- Overview and MCP setup
+  scripts/setup.py            <- Interactive setup wizard
+
+  klaviyo-analyst/             <- Email/SMS marketing audit
+    SKILL.md, REFERENCE.md, EXAMPLES.md
+    scripts/ (klaviyo_client.py, analyze.py)
+
+  klaviyo-developer/           <- API integration and development
+    SKILL.md, REFERENCE.md, EXAMPLES.md
+    scripts/ (klaviyo_client.py, dev_tools.py)
+
+  google-analytics/            <- GA4 analytics
+    SKILL.md, REFERENCE.md, EXAMPLES.md
+    scripts/ (ga_client.py, analyze.py)
+
+  shopify/                     <- Shopify store analytics
+    SKILL.md, REFERENCE.md, EXAMPLES.md
+    scripts/ (shopify_client.py, analyze.py)
+
+  looker-studio/               <- Cross-platform dashboards
+    SKILL.md, REFERENCE.md, EXAMPLES.md
+    scripts/ (data_pipeline.py)
+
+  pro-deck-builder/            <- Presentation creation
+    SKILL.md, REFERENCE.md
 ```
 
 ## Getting Help
 
 - **In Claude Code**: Ask Claude directly -- the skills provide context automatically
 - **Skill-specific help**: Run any script with `--help` for usage info
-- **Issues**: Report problems at the skill pack repository
+- **Issues**: Open an issue on this repository
 - **Claude Code help**: Run `/help` in Claude Code for general assistance

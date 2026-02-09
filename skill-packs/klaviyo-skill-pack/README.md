@@ -1,10 +1,21 @@
-# Klaviyo Skill Pack
+# Klaviyo Skill Pack for Claude Code
 
-Everything a DTC marketing team needs for Klaviyo + Shopify + GA4 + Looker Studio — all in one Claude Code skill pack. Audit your email/SMS marketing, analyze store performance, build cross-platform dashboards, and create presentation-quality reports.
+A complete DTC marketing toolkit for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Six skills covering Klaviyo email/SMS, Shopify analytics, Google Analytics, Looker Studio dashboards, and presentation generation -- all designed to work together.
 
 > **New to this pack?** Start with [GETTING_STARTED.md](GETTING_STARTED.md) for a step-by-step setup guide, or run `python scripts/setup.py` for the interactive wizard.
 
-## How It All Connects
+## What's Included
+
+| Skill | What It Does | Includes |
+|-------|-------------|----------|
+| **klaviyo-analyst** | Audit and optimize flows, segments, campaigns, deliverability, and revenue attribution. 4-phase deep audit framework with industry benchmarks and three-tier recommendation format. | SKILL + REFERENCE + EXAMPLES + scripts |
+| **klaviyo-developer** | Build custom integrations: event tracking, SDK usage, webhooks, rate limits, catalog sync, OAuth. Integration health audit workflow with event schema best practices. | SKILL + REFERENCE + EXAMPLES + scripts |
+| **shopify** | Audit store performance: orders, products, customers, conversion funnels, revenue trends. | SKILL + REFERENCE + EXAMPLES + scripts |
+| **google-analytics** | Analyze GA4 data: traffic sources, engagement, content performance, conversion funnels, device comparison. | SKILL + REFERENCE + EXAMPLES + scripts |
+| **looker-studio** | Build cross-platform dashboards with Klaviyo + Shopify + GA4 data via Google Sheets pipeline. DTC dashboard templates and calculated field library. | SKILL + REFERENCE + EXAMPLES + scripts |
+| **pro-deck-builder** | Create polished PowerPoint decks using PptxGenJS. VC-backed SaaS design quality with dark/light modes, icon pipelines, and chart formatting. | SKILL + REFERENCE |
+
+## How the Skills Connect
 
 ```
 Shopify (orders, products, customers)
@@ -18,22 +29,11 @@ Shopify (orders, products, customers)
     +--> Pro Deck Builder (polished presentations from any analysis)
 ```
 
-The skills work independently, but they're designed to complement each other:
+The skills work independently, but they complement each other:
 - Run a **Shopify** audit to find conversion issues, then check **Klaviyo** flows that address them
 - Use **Looker Studio** scripts to push Klaviyo + Shopify data to Google Sheets for unified dashboards
 - Analyze **GA4** traffic sources, then cross-reference with **Klaviyo** campaign performance
 - Turn any analysis into a polished deck with **Pro Deck Builder**
-
-## Skills Included
-
-| Skill | What It Does | Maturity |
-|-------|-------------|----------|
-| **klaviyo-analyst** | Audit and optimize Klaviyo flows, segments, campaigns, deliverability, and revenue attribution. Marketing operations perspective with benchmarks, essential flows checklist, and full audit workflow. | Full (SKILL + REFERENCE + EXAMPLES + scripts) |
-| **klaviyo-developer** | Build custom Klaviyo integrations — event tracking, SDK usage, webhooks, rate limits, catalog sync, OAuth, and data pipeline architecture. | Full (SKILL + REFERENCE + EXAMPLES + scripts) |
-| **google-analytics** | Analyze GA4 data: traffic sources, engagement, content performance, conversion funnels, device comparison. | Full (SKILL + REFERENCE + EXAMPLES + scripts) |
-| **shopify** | Audit Shopify store performance: orders, products, customers, conversion funnel, revenue trends. Includes API client and automated analysis. | Full (SKILL + REFERENCE + EXAMPLES + scripts) |
-| **looker-studio** | Build cross-platform dashboards with Klaviyo + Shopify + GA4 data via Google Sheets pipeline. DTC dashboard templates and calculated field library. | Full (SKILL + REFERENCE + EXAMPLES + scripts) |
-| **pro-deck-builder** | Create polished PowerPoint decks using PptxGenJS with VC-backed SaaS design quality (Linear/Vercel aesthetic). Dark and light modes, icon pipelines, chart formatting. | Docs (SKILL + REFERENCE) |
 
 ## Quick Start
 
@@ -43,13 +43,15 @@ The skills work independently, but they're designed to complement each other:
 python scripts/setup.py
 ```
 
+The wizard checks prerequisites, walks you through API key setup, installs dependencies, and tests connections.
+
 ### Option 2: Manual Setup
 
-See [GETTING_STARTED.md](GETTING_STARTED.md) for detailed instructions.
+See [GETTING_STARTED.md](GETTING_STARTED.md) for detailed step-by-step instructions.
 
-### Option 3: Just Install the Skills
+### Option 3: Copy Skills Directly
 
-If you already have API keys configured, copy skills to Claude Code:
+If you already have API keys configured:
 
 ```bash
 for skill in klaviyo-analyst klaviyo-developer google-analytics shopify looker-studio pro-deck-builder; do
@@ -61,7 +63,7 @@ done
 
 ### Klaviyo MCP Server (for Analyst + Developer skills)
 
-The [Klaviyo MCP server](https://developers.klaviyo.com/en/docs/klaviyo_mcp_server) gives Claude direct access to your Klaviyo account data through 45 tools.
+The [Klaviyo MCP server](https://developers.klaviyo.com/en/docs/klaviyo_mcp_server) gives Claude direct access to your Klaviyo account data.
 
 **1. Create a Klaviyo Private API Key**
 
@@ -122,17 +124,19 @@ Restart Claude Code and verify with `/mcp`.
 
 ## Example Prompts
 
-### Marketing Analyst (Klaviyo)
+### Klaviyo Marketing Analyst
 - "Audit my Klaviyo account and identify missing flows"
 - "My abandoned cart flow has a 1.2% click rate -- how do I improve it?"
-- "Build an RFM segmentation strategy"
+- "Build an RFM segmentation strategy for my DTC brand"
+- "Give me a three-tier recommendation with implementation spec for fixing my click rates"
 - "Design an RFM segmentation strategy and present it in a slide deck"
 
-### Developer (Klaviyo)
+### Klaviyo Developer
 - "How do I track a custom event from my Node.js backend?"
 - "Set up a bulk profile import script for migrating 50K contacts"
 - "Help me handle Klaviyo rate limits in my integration"
 - "Design a webhook handler for Klaviyo subscription events"
+- "Audit my integration -- are events structured correctly?"
 
 ### Shopify
 - "Audit my Shopify store and tell me what needs fixing"
@@ -152,9 +156,31 @@ Restart Claude Code and verify with `/mcp`.
 - "Create a Google Sheet template for a lifecycle marketing dashboard"
 - "Push our Shopify order data to Google Sheets for Looker Studio"
 
-### Decks
+### Presentations
 - "Build a dark-mode deck summarizing my Klaviyo flow performance"
 - "Create a monthly marketing performance presentation"
+
+## Frequently Asked Questions
+
+### Do I need all six skills?
+
+No. Install only the skills for platforms you use. Each skill works independently. The Klaviyo Analyst skill is the most popular starting point.
+
+### Do I need the Klaviyo MCP server?
+
+The MCP server lets Claude pull live data from your Klaviyo account (flows, segments, campaigns, metrics). Without it, Claude still has full Klaviyo expertise but you'll need to provide data manually (paste metrics, share screenshots, or use the included scripts).
+
+### What Klaviyo API scopes are needed?
+
+Read-only scopes are sufficient for all audit and analysis tasks. Only enable write scopes if you want Claude to help build integrations that modify data.
+
+### Can I use this with multiple Klaviyo accounts?
+
+Yes. Configure multiple MCP server entries in `~/.mcp.json` with different environment variable names (e.g., `KLAVIYO_API_KEY_BRAND1`, `KLAVIYO_API_KEY_BRAND2`).
+
+### How is this different from Klaviyo's built-in AI?
+
+Klaviyo's AI features work within the Klaviyo UI for specific tasks (subject line generation, segment suggestions). This skill pack gives Claude deep, cross-platform expertise: it can audit your entire marketing stack, compare Klaviyo data with Shopify and GA4, produce implementation specs, and generate presentation decks -- all from natural language prompts in your terminal.
 
 ## Resources
 
@@ -163,4 +189,4 @@ Restart Claude Code and verify with `/mcp`.
 - [Shopify Admin API Reference](https://shopify.dev/docs/api/admin-rest)
 - [Google Analytics Data API](https://developers.google.com/analytics/devguides/reporting/data/v1)
 - [Looker Studio Help](https://support.google.com/looker-studio)
-- [uv Package Manager Installation](https://docs.astral.sh/uv/getting-started/installation/)
+- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
