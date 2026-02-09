@@ -11,7 +11,7 @@ https://a.klaviyo.com/api/
 ```
 Authorization: Klaviyo-API-Key {private-api-key}
 Content-Type: application/json
-revision: 2024-10-15
+revision: 2025-10-15
 ```
 
 ### Profiles
@@ -147,7 +147,7 @@ const klaviyo = new ApiClient('pk_abc123...');
 # Raw HTTP
 curl -X GET "https://a.klaviyo.com/api/profiles/" \
   -H "Authorization: Klaviyo-API-Key pk_abc123..." \
-  -H "revision: 2024-10-15"
+  -H "revision: 2025-10-15"
 ```
 
 ### Public API Key (Client-side - klaviyo.js)
@@ -280,7 +280,7 @@ response = requests.post(
     headers={
         "Authorization": "Klaviyo-API-Key pk_abc123...",
         "Content-Type": "application/json",
-        "revision": "2024-10-15"
+        "revision": "2025-10-15"
     },
     json={
         "data": {
@@ -569,12 +569,16 @@ All errors follow JSON:API format:
 
 | Revision | Status | Key Changes |
 |----------|--------|-------------|
-| 2024-10-15 | **Current stable** | Enhanced filtering, new relationship endpoints |
-| 2024-07-15 | Supported | Catalog bulk ops, segment membership endpoints |
-| 2024-02-15 | Supported | Reporting API, campaign message content |
-| 2023-10-15 | Supported | Flows API, template cloning |
-| 2023-06-15 | Supported | Bulk profile import, campaign creation |
-| 2023-02-22 | Deprecated | Initial JSON:API migration |
+| 2026-01-15 | **Latest** | Custom Objects Ingestion, Geofencing API (beta) |
+| 2025-10-15 | Supported | Forms API, Flow Actions API, SMS ROI reporting |
+| 2025-07-15 | Supported | Mapped Metrics API, Custom Objects API (GA) |
+| 2025-04-15 | Supported | Web Feeds API, Custom Metrics, Push Token registration |
+| 2025-01-15 | Supported | Reviews APIs, Flows Create API, Campaign image management |
+| 2024-10-15 | Supported | Universal Content API, Form/Segment Reporting, Reviews API |
+| 2024-07-15 | Supported | Forms API (retrieval), Webhooks API |
+| 2024-02-15 | Supported | Reporting API, Create or Update Profile (upsert) |
+| 2023-10-15 | Deprecated | List suppression filtering, subscription status on profiles |
+| 2023-06-15 | Deprecated | Accounts API, list/segment member counts, rate limit increases |
 
 ### Version Lifecycle
 1. **Current** — Latest revision, recommended for new integrations
