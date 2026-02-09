@@ -134,3 +134,75 @@ Ask me questions like:
 - "Plan a loyalty program for my DTC brand"
 
 For detailed Shopify API reference, Liquid theme customization, and advanced configurations, see [REFERENCE.md](REFERENCE.md).
+
+## Analysis Examples
+
+For complete analysis patterns, sample outputs, and use cases, see [EXAMPLES.md](EXAMPLES.md).
+
+## Scripts
+
+The skill includes utility scripts for API interaction and automated analysis:
+
+### Fetch Store Data
+```bash
+# Get store info (API health check)
+python scripts/shopify_client.py --resource shop
+
+# List recent orders
+python scripts/shopify_client.py --resource orders --days 30
+
+# Export products as CSV
+python scripts/shopify_client.py --resource products --status active --format csv --output products.csv
+
+# Quick order count
+python scripts/shopify_client.py --resource order-count --status any
+```
+
+### Run Analysis
+```bash
+# Full store audit (all analyses combined)
+python scripts/analyze.py --analysis-type full-audit
+
+# Conversion funnel (last 30 days)
+python scripts/analyze.py --analysis-type conversion-funnel --days 30
+
+# Product performance
+python scripts/analyze.py --analysis-type product-performance --days 30
+
+# Customer cohorts (last 90 days)
+python scripts/analyze.py --analysis-type customer-cohorts --days 90
+
+# Revenue analysis with output file
+python scripts/analyze.py --analysis-type revenue-analysis --days 30 --output revenue.json
+```
+
+The scripts handle API authentication, rate limiting, pagination, and basic analysis. I'll interpret the results and provide actionable recommendations.
+
+## Troubleshooting
+
+**Authentication Error**: Verify that:
+- `SHOPIFY_STORE_URL` is your `.myshopify.com` URL (not your custom domain)
+- `SHOPIFY_ACCESS_TOKEN` starts with `shpat_` and is from a Custom App
+- The app has the required API scopes (read_orders, read_products, read_customers)
+
+**Rate Limiting**: The scripts handle Shopify's 2 requests/second limit automatically. If you see 429 errors, the retry logic will wait and continue. For large stores, consider using `--limit` to reduce data volume.
+
+**No Orders Returned**: Check that:
+- The date range (`--days`) covers a period with orders
+- The `--status` filter matches your orders (use `any` to see all)
+- The Admin API access token hasn't expired
+
+**Import Errors**: Install required packages:
+```bash
+pip install -r requirements.txt
+```
+
+## Security & Privacy
+
+- **Never hardcode** API credentials in code — use `.env` files
+- Store access tokens **outside** version control
+- Add `.env` and credential files to `.gitignore`
+- The scripts are **read-only** — they do not create, modify, or delete any Shopify data
+- Use Admin API scopes with minimum required access (read-only)
+- Customer PII (emails, names) is processed locally and never stored persistently
+- Rotate access tokens periodically
