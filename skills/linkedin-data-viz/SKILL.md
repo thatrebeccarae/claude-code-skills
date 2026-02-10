@@ -10,7 +10,7 @@ description: >
 
 # LinkedIn Data Viz Skill
 
-This skill transforms a LinkedIn data export into 9 interactive HTML visualizations with a unified dashboard. It walks the user through a wizard flow: locating their export, previewing analysis, selecting a theme, generating output, and optionally sanitizing for public sharing.
+This skill transforms a LinkedIn data export into 9 interactive HTML visualizations with a unified dashboard. It walks the user through a wizard flow: locating their export, previewing analysis, selecting a theme, and generating output. All data stays local on the user's machine.
 
 ---
 
@@ -166,27 +166,7 @@ Generated files:
 
 4. Tell the user they can open any HTML file directly in a browser -- no server required.
 
-**Gate:** Confirm output was generated successfully. Ask if user wants to proceed to optional sanitization step.
-
----
-
-### Step 6: Optional -- Sanitize & Publish
-
-Ask if the user wants to create a publishable demo version with fake data.
-
-**Claude actions:**
-
-1. Ask: "Would you like to create a demo-ready version with sanitized data? This replaces all real names, companies, and messages with realistic fake data while preserving the statistical patterns."
-2. If yes, run `scripts/sanitize.py <output_dir> --demo-output <demo_dir>`.
-3. The sanitizer:
-   - Replaces all names with generated fake names
-   - Replaces company names with fictional companies
-   - Replaces message content with lorem-style text
-   - Preserves date distributions and statistical patterns
-   - Preserves the visualization structure and interactivity
-4. Report the demo output directory and list generated demo files.
-
-If the user declines, the wizard is complete.
+**Gate:** Confirm output was generated successfully. The wizard is complete.
 
 ---
 
@@ -239,7 +219,6 @@ All scripts live in `scripts/` and are invoked by Claude during the wizard flow.
 | `parse_csvs.py` | Parse and validate all CSV files | CSV directory path | Parsed data structures (stdout summary) |
 | `analyze.py` | Run all analysis algorithms | CSV directory, output directory | `analysis.json` in output dir |
 | `generate.py` | Inject data + theme into HTML templates | Output dir, theme CSS path, viz list | HTML files in output dir |
-| `sanitize.py` | Replace real data with fake data | Output dir, demo output dir | Sanitized HTML files in demo dir |
 
 Templates live in `templates/` and use `{{DATA}}` and `{{THEME_CSS}}` placeholders.
 

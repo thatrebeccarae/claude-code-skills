@@ -398,16 +398,61 @@ const DATA = {
       { value: "347", label: "Companies" }
     ],
     nodes: [
-      { id: "Marketing", size: 412, group: 0, top_companies: ["Ogilvy Group", "HubSpot", "Mailchimp"] },
-      { id: "Tech / Engineering", size: 318, group: 1, top_companies: ["Stripe", "Vercel", "Datadog"] },
-      { id: "Founders", size: 247, group: 2, top_companies: ["YC W23", "Sequoia Scout", "First Round"] },
-      { id: "Sales", size: 196, group: 3, top_companies: ["Salesforce", "Gong", "Outreach"] },
-      { id: "Product", size: 155, group: 4, top_companies: ["Figma", "Linear", "Notion"] },
-      { id: "Design", size: 127, group: 5, top_companies: ["IDEO", "Pentagram", "Fantasy"] },
-      { id: "Recruiting", size: 114, group: 6, top_companies: ["Korn Ferry", "Lever", "Greenhouse"] },
-      { id: "Consulting", size: 98, group: 7, top_companies: ["McKinsey", "Deloitte", "BCG"] },
-      { id: "Executive", size: 92, group: 8, top_companies: ["Stripe", "Notion", "Figma"] },
-      { id: "Operations", size: 88, group: 9, top_companies: ["Shopify", "Flexport", "DoorDash"] }
+      { id: "Marketing", size: 412, group: 0, top_companies: ["Ogilvy Group", "HubSpot", "Mailchimp"], children: [
+        { id: "Growth Marketing", size: 118, group: 0 },
+        { id: "Brand & Creative", size: 95, group: 0 },
+        { id: "Email / Lifecycle", size: 87, group: 0 },
+        { id: "Content & SEO", size: 64, group: 0 },
+        { id: "Performance / Paid", size: 48, group: 0 }
+      ]},
+      { id: "Tech / Engineering", size: 318, group: 1, top_companies: ["Stripe", "Vercel", "Datadog"], children: [
+        { id: "Full-Stack Dev", size: 102, group: 1 },
+        { id: "Data / ML", size: 78, group: 1 },
+        { id: "DevOps / Infra", size: 65, group: 1 },
+        { id: "Frontend", size: 73, group: 1 }
+      ]},
+      { id: "Founders", size: 247, group: 2, top_companies: ["YC W23", "Sequoia Scout", "First Round"], children: [
+        { id: "VC-Backed", size: 89, group: 2 },
+        { id: "Bootstrapped", size: 72, group: 2 },
+        { id: "AI / Deep Tech", size: 51, group: 2 },
+        { id: "DTC Founders", size: 35, group: 2 }
+      ]},
+      { id: "Sales", size: 196, group: 3, top_companies: ["Salesforce", "Gong", "Outreach"], children: [
+        { id: "Account Exec", size: 74, group: 3 },
+        { id: "Sales Leaders", size: 58, group: 3 },
+        { id: "SDR / BDR", size: 38, group: 3 },
+        { id: "RevOps", size: 26, group: 3 }
+      ]},
+      { id: "Product", size: 155, group: 4, top_companies: ["Figma", "Linear", "Notion"], children: [
+        { id: "Product Mgmt", size: 68, group: 4 },
+        { id: "Product Strategy", size: 48, group: 4 },
+        { id: "Growth PM", size: 39, group: 4 }
+      ]},
+      { id: "Design", size: 127, group: 5, top_companies: ["IDEO", "Pentagram", "Fantasy"], children: [
+        { id: "UX / UI", size: 55, group: 5 },
+        { id: "Brand Design", size: 42, group: 5 },
+        { id: "Design Leads", size: 30, group: 5 }
+      ]},
+      { id: "Recruiting", size: 114, group: 6, top_companies: ["Korn Ferry", "Lever", "Greenhouse"], children: [
+        { id: "Tech Recruiters", size: 48, group: 6 },
+        { id: "Exec Search", size: 36, group: 6 },
+        { id: "HR / People", size: 30, group: 6 }
+      ]},
+      { id: "Consulting", size: 98, group: 7, top_companies: ["McKinsey", "Deloitte", "BCG"], children: [
+        { id: "Strategy", size: 42, group: 7 },
+        { id: "Digital / Tech", size: 32, group: 7 },
+        { id: "Fractional Execs", size: 24, group: 7 }
+      ]},
+      { id: "Executive", size: 92, group: 8, top_companies: ["Stripe", "Notion", "Figma"], children: [
+        { id: "C-Suite", size: 38, group: 8 },
+        { id: "VP-Level", size: 34, group: 8 },
+        { id: "Board / Advisors", size: 20, group: 8 }
+      ]},
+      { id: "Operations", size: 88, group: 9, top_companies: ["Shopify", "Flexport", "DoorDash"], children: [
+        { id: "Supply Chain", size: 32, group: 9 },
+        { id: "Biz Ops", size: 30, group: 9 },
+        { id: "Finance / FP&A", size: 26, group: 9 }
+      ]}
     ],
     links: [
       { source: "Marketing", target: "Sales", strength: 18 },
@@ -659,41 +704,140 @@ sections.forEach(s => observer.observe(s));
 /* HERO */
 if (DATA.hero) renderStats('hero-stats', DATA.hero.stats);
 
-/* 01: NETWORK UNIVERSE */
+/* 01: NETWORK UNIVERSE — Hierarchical (click parent to expand/collapse children) */
 if (DATA.network) {
   const nd = DATA.network;
   renderStats('network-stats', nd.stats || []);
+
   const gc = document.getElementById('graph');
   const gw = gc.clientWidth, gh = 600;
   const gsvg = d3.select('#graph').append('svg').attr('viewBox', `0 0 ${gw} ${gh}`).attr('preserveAspectRatio', 'xMidYMid meet');
-  const gScale = d3.scaleSqrt().domain([0, d3.max(nd.nodes, d => d.size)]).range([12, 60]);
-  const gSim = d3.forceSimulation(nd.nodes)
-    .force('link', d3.forceLink(nd.links).id(d => d.id).distance(d => 150 - d.strength * 3))
-    .force('charge', d3.forceManyBody().strength(-450))
-    .force('center', d3.forceCenter(gw / 2, gh / 2))
-    .force('collision', d3.forceCollide().radius(d => gScale(d.size) + 12));
-  const gLink = gsvg.append('g').selectAll('line').data(nd.links).join('line')
-    .attr('class', 'graph-link').attr('stroke-width', d => Math.max(1, d.strength * 0.5));
-  const gNode = gsvg.append('g').selectAll('g').data(nd.nodes).join('g')
-    .call(d3.drag()
-      .on('start', (e, d) => { if (!e.active) gSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-      .on('end', (e, d) => { if (!e.active) gSim.alphaTarget(0); d.fx = null; d.fy = null; })
-    );
-  gNode.append('circle').attr('r', d => gScale(d.size)).attr('fill', d => PALETTE[d.group % PALETTE.length]).attr('fill-opacity', 0.8).attr('stroke', d => PALETTE[d.group % PALETTE.length]).attr('stroke-width', 2).attr('stroke-opacity', 0.9);
-  gNode.append('text').attr('class', 'node-label').attr('text-anchor', 'middle').attr('dy', '-0.3em').text(d => d.id);
-  gNode.append('text').attr('class', 'node-count').attr('text-anchor', 'middle').attr('dy', '1em').text(d => d.size);
   const gTip = document.getElementById('tooltip');
-  gNode.on('mouseover', (e, d) => {
-    gTip.innerHTML = `<strong>${d.id}</strong><br>${d.size} connections<div class="companies">Top: ${d.top_companies.join(', ')}</div>`;
-    gTip.style.opacity = 1; gTip.style.left = (e.offsetX + 15) + 'px'; gTip.style.top = (e.offsetY - 10) + 'px';
-  }).on('mouseout', () => { gTip.style.opacity = 0; });
-  gSim.on('tick', () => {
-    gLink.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-    gNode.attr('transform', d => `translate(${d.x},${d.y})`);
+
+  /* Build flat node/link arrays from hierarchical data */
+  const parentNodes = nd.nodes.map(n => ({ ...n, _type: 'parent', _expanded: false }));
+  let allNodes = [...parentNodes];
+  let allLinks = [...nd.links];
+  const childMap = new Map(); // parentId -> child node array
+
+  nd.nodes.forEach(p => {
+    if (p.children) {
+      const kids = p.children.map(c => ({ ...c, _type: 'child', _parent: p.id, top_companies: [] }));
+      childMap.set(p.id, kids);
+    }
   });
+
+  /* Scales */
+  const parentScale = d3.scaleSqrt().domain([0, d3.max(parentNodes, d => d.size)]).range([20, 60]);
+  const childScale = d3.scaleSqrt().domain([0, 120]).range([6, 22]);
+
+  function nodeRadius(d) {
+    return d._type === 'parent' ? parentScale(d.size) : childScale(d.size);
+  }
+  function nodeColor(d) {
+    const base = PALETTE[d.group % PALETTE.length];
+    return d._type === 'child' ? base + 'aa' : base;
+  }
+
+  /* SVG layers */
+  const linkLayer = gsvg.append('g');
+  const nodeLayer = gsvg.append('g');
+
+  let gSim;
+
+  function restart() {
+    /* Links */
+    const linkSel = linkLayer.selectAll('line').data(allLinks, d => d.source.id ? d.source.id + '-' + d.target.id : d.source + '-' + d.target);
+    linkSel.exit().transition().duration(300).attr('stroke-opacity', 0).remove();
+    const linkEnter = linkSel.enter().append('line').attr('class', 'graph-link').attr('stroke-opacity', 0);
+    const linkMerge = linkEnter.merge(linkSel);
+    linkMerge.transition().duration(300).attr('stroke-width', d => d._childLink ? 1 : Math.max(1, (d.strength || 4) * 0.5)).attr('stroke-opacity', d => d._childLink ? 0.4 : 0.6).attr('stroke', d => d._childLink ? PALETTE[d._group % PALETTE.length] + '44' : 'rgba(255,255,255,0.1)');
+
+    /* Nodes */
+    const nodeSel = nodeLayer.selectAll('g.node').data(allNodes, d => d.id);
+    nodeSel.exit().transition().duration(300).attr('opacity', 0).remove();
+
+    const nodeEnter = nodeSel.enter().append('g').attr('class', 'node').attr('opacity', 0)
+      .call(d3.drag()
+        .on('start', (e, d) => { if (!e.active) gSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+        .on('end', (e, d) => { if (!e.active) gSim.alphaTarget(0); d.fx = null; d.fy = null; })
+      );
+
+    nodeEnter.append('circle');
+    nodeEnter.append('text').attr('class', 'node-label').attr('text-anchor', 'middle');
+    nodeEnter.append('text').attr('class', 'node-count').attr('text-anchor', 'middle');
+
+    const nodeMerge = nodeEnter.merge(nodeSel);
+    nodeMerge.transition().duration(300).attr('opacity', 1);
+
+    nodeMerge.select('circle')
+      .attr('r', d => nodeRadius(d))
+      .attr('fill', d => nodeColor(d))
+      .attr('fill-opacity', d => d._type === 'child' ? 0.6 : 0.8)
+      .attr('stroke', d => PALETTE[d.group % PALETTE.length])
+      .attr('stroke-width', d => d._type === 'child' ? 1 : 2)
+      .attr('stroke-opacity', 0.9)
+      .style('cursor', d => d._type === 'parent' && childMap.has(d.id) ? 'pointer' : 'default');
+
+    nodeMerge.select('.node-label')
+      .attr('dy', d => d._type === 'child' ? '0.35em' : '-0.3em')
+      .style('font-size', d => d._type === 'child' ? '9px' : '11px')
+      .text(d => d._type === 'child' && nodeRadius(d) < 14 ? '' : d.id);
+
+    nodeMerge.select('.node-count')
+      .attr('dy', '1em')
+      .style('font-size', d => d._type === 'child' ? '8px' : '10px')
+      .text(d => d._type === 'child' && nodeRadius(d) < 14 ? '' : d.size);
+
+    /* Tooltip */
+    nodeMerge.on('mouseover', (e, d) => {
+      const info = d._type === 'parent' && d.top_companies
+        ? `<div class="companies">Top: ${d.top_companies.join(', ')}</div>`
+        : d._parent ? `<div class="companies">Cluster: ${d._parent}</div>` : '';
+      const hint = d._type === 'parent' && childMap.has(d.id) ? `<div style="margin-top:4px;font-size:0.72rem;color:var(--accent-primary);">Click to ${d._expanded ? 'collapse' : 'expand'}</div>` : '';
+      gTip.innerHTML = `<strong>${d.id}</strong><br>${d.size} connections${info}${hint}`;
+      gTip.style.opacity = 1; gTip.style.left = (e.offsetX + 15) + 'px'; gTip.style.top = (e.offsetY - 10) + 'px';
+    }).on('mouseout', () => { gTip.style.opacity = 0; });
+
+    /* Click to expand/collapse */
+    nodeMerge.on('click', (e, d) => {
+      if (d._type !== 'parent' || !childMap.has(d.id)) return;
+      e.stopPropagation();
+      d._expanded = !d._expanded;
+      if (d._expanded) {
+        const kids = childMap.get(d.id);
+        kids.forEach(k => { k.x = d.x + (Math.random() - 0.5) * 40; k.y = d.y + (Math.random() - 0.5) * 40; });
+        allNodes = allNodes.concat(kids);
+        kids.forEach(k => { allLinks.push({ source: d.id, target: k.id, strength: 4, _childLink: true, _group: d.group }); });
+      } else {
+        const kids = childMap.get(d.id);
+        const kidIds = new Set(kids.map(k => k.id));
+        allNodes = allNodes.filter(n => !kidIds.has(n.id));
+        allLinks = allLinks.filter(l => !l._childLink || ((l.source.id || l.source) !== d.id && !kidIds.has(l.source.id || l.source)));
+      }
+      restart();
+    });
+
+    /* Simulation */
+    if (gSim) gSim.stop();
+    gSim = d3.forceSimulation(allNodes)
+      .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => d._childLink ? 40 + nodeRadius(d.target) : 150 - (d.strength || 4) * 3))
+      .force('charge', d3.forceManyBody().strength(d => d._type === 'child' ? -80 : -450))
+      .force('center', d3.forceCenter(gw / 2, gh / 2))
+      .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + (d._type === 'child' ? 4 : 12)))
+      .on('tick', () => {
+        linkMerge.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        nodeMerge.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+    gSim.alpha(0.6).restart();
+  }
+
+  restart();
+
+  /* Legend */
   const gLeg = document.getElementById('legend');
-  [...nd.nodes].sort((a, b) => b.size - a.size).forEach(n => {
+  [...parentNodes].sort((a, b) => b.size - a.size).forEach(n => {
     gLeg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[n.group % PALETTE.length]}"></div>${n.id} (${n.size})</div>`;
   });
 }
