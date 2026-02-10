@@ -385,7 +385,7 @@ section:nth-child(even of section){background:var(--bg-surface)}
   <div class="card"><div class="chart-box" style="height:480px;"><canvas id="postingChart"></canvas></div></div>
   <div class="highlight-row" id="posting-highlights"></div>
   <div class="prompt-box">
-    <div class="prompt-label">Prompt to Try</div>
+    <div class="prompt-label">Prompt</div>
     <div class="prompt-text" id="posting-prompt"></div>
     <div class="prompt-sources" id="posting-sources"></div>
   </div>
@@ -711,18 +711,18 @@ const DATA = {
     noise: [8, 12, 15, 18, 22, 25, 28, 30, 32, 35, 38, 42, 18],
     insights: [
       { label: "Genuine Rate Trend", value: "Stable at 91-93% across all periods" },
-      { label: "Peak Volume", value: "H2 2025 — 527 total messages (485 genuine)" },
+      { label: "Peak Volume", value: "H2 2025 — 92% genuine rate (527 total messages)" },
       { label: "Noise Sources", value: "Primarily InMail and automated recruiter outreach" },
       { label: "Response Pattern", value: "You respond to 78% of genuine messages within 48 hours" }
     ]
   },
   posting: {
-    chart_title: "Correlation: 0.71 — Posting drives connection growth",
-    labels: ["Nov '23","Dec '23","Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25"],
-    connections: [35, 80, 80, 35, 130, 115, 230, 110, 105, 70, 30, 10, 75, 85, 70, 130, 110, 85, 170, 85, 180, 150, 120, 115, 65],
-    posts: [2, 3, 3, 3, 7, 7, 14, 7, 7, 4, 3, 2, 5, 5, 4, 8, 6, 4, 10, 4, 10, 8, 7, 4, 1],
+    chart_title: "r = 0.73 — Posting drives connection growth",
+    labels: ["Nov '23","Dec '23","Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26"],
+    connections: [5, 4, 8, 5, 7, 9, 4, 10, 7, 6, 8, 6, 9, 6, 39, 49, 25, 72, 79, 96, 106, 122, 116, 94, 129, 122, 140],
+    posts: [1, 1, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 1, 3, 3, 2, 4, 4, 5, 5, 6, 6, 5, 6, 6, 6],
     highlights: [
-      { value: "0.71", label: "correlation coefficient", note: "(that's strong)" },
+      { value: "0.73", label: "correlation coefficient", note: "(that's strong)" },
       { value: "1833%", label: "more connections/month", note: "after consistent posting" },
       { value: "5 → 100", label: "avg connections/month", note: "before vs after" }
     ],
@@ -1198,7 +1198,7 @@ if (DATA.inbox) {
     type: 'bar',
     data: { labels: iq.chart_labels, datasets: [
       { label: 'Genuine', data: iq.genuine, backgroundColor: VIZ.teal + 'cc', borderRadius: 4, barPercentage: 0.85 },
-      { label: 'Noise', data: iq.noise, backgroundColor: VIZ.pink + 'aa', borderRadius: 4, barPercentage: 0.85 }
+      { label: 'Junk', data: iq.noise, backgroundColor: VIZ.pink + 'aa', borderRadius: 4, barPercentage: 0.85 }
     ] },
     options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } }, y: { stacked: true, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true } }, plugins: { legend: { position: 'top', align: 'end', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, padding: 14 } }, tooltip: { callbacks: { afterBody: function(ctx) { const i = ctx[0].dataIndex; const t = iq.genuine[i] + iq.noise[i]; return t > 0 ? `Genuine: ${((iq.genuine[i] / t) * 100).toFixed(1)}%` : ''; } } } } }
   });
