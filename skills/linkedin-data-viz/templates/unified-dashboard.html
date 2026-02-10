@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Data Visualization</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+{{THEME_CSS}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="nav-brand">LinkedIn Data</span>
+    <a href="#network" class="nav-link">Network</a>
+    <a href="#inferences" class="nav-link">Inferences</a>
+    <a href="#messages" class="nav-link">Messages</a>
+    <a href="#companies" class="nav-link">Companies</a>
+    <a href="#invitations" class="nav-link">Invitations</a>
+    <a href="#quality" class="nav-link">Quality</a>
+    <a href="#timeline" class="nav-link">Timeline</a>
+    <a href="#inbox" class="nav-link">Inbox</a>
+    <a href="#strata" class="nav-link">Strata</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <h1>LinkedIn Data Export Visualization</h1>
+  <p class="lead">A complete visual analysis of your LinkedIn data — connections, messages, invitations, and followed companies.</p>
+  <div class="hero-stats" id="hero-stats"></div>
+</header>
+
+<!-- 01: NETWORK UNIVERSE -->
+<section id="network">
+<div class="section-inner">
+  <div class="section-num">01</div>
+  <h2 class="section-title">Network Universe</h2>
+  <p class="section-subtitle">Connections clustered by role and industry. Node size reflects cluster population. Links show shared employers between groups. Drag nodes to explore.</p>
+  <div class="stats-row" id="network-stats"></div>
+  <div class="card" id="graph-container">
+    <div id="graph"></div>
+    <div class="graph-tooltip" id="tooltip"></div>
+    <div class="graph-legend" id="legend"></div>
+  </div>
+</div>
+</section>
+
+<!-- 02: INFERENCES VS REALITY -->
+<section id="inferences">
+<div class="section-inner">
+  <div class="section-num">02</div>
+  <h2 class="section-title">Inferences vs Reality</h2>
+  <p class="section-subtitle">What LinkedIn thinks it knows about you, compared to what your actual data reveals.</p>
+  <div class="stats-row" id="inference-stats"></div>
+  <div class="card">
+    <div class="card-title">LinkedIn's Inferences</div>
+    <div class="inference-grid" id="inference-grid"></div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="follows-title">What You Actually Follow</div>
+    <div class="follows-grid" id="follows-grid"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ad Targeting: What LinkedIn Sells About You</div>
+    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;">LinkedIn assigns you to interest categories for advertisers. Sample — <span style="color:var(--accent-primary);">relevant</span> vs <span style="color:var(--viz-pink);">questionable</span>:</p>
+    <div class="tag-cloud" id="interest-tags"></div>
+    <div style="margin-top:16px;">
+      <div class="card-title" style="font-size:0.9rem;">The Verdict</div>
+      <div id="verdict-rows"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 03: HIGH-VALUE MESSAGES -->
+<section id="messages">
+<div class="section-inner">
+  <div class="section-num">03</div>
+  <h2 class="section-title">High-Value Messages</h2>
+  <p class="section-subtitle">Unanswered LinkedIn messages ranked by potential value. Filtered to surface genuine opportunities.</p>
+  <div class="stats-row" id="msg-stats"></div>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All Genuine</button>
+    <button class="filter-btn" data-filter="opportunity">Opportunities</button>
+    <button class="filter-btn" data-filter="relationship">Relationships</button>
+    <button class="filter-btn" data-filter="network">Networking</button>
+  </div>
+  <div class="msg-cards" id="msg-cards"></div>
+</div>
+</section>
+
+<!-- 04: COMPANY FOLLOWS CLUSTERING -->
+<section id="companies">
+<div class="section-inner">
+  <div class="section-num">04</div>
+  <h2 class="section-title">Company Follows Clustering</h2>
+  <p class="section-subtitle">Followed companies grouped by theme. Your professional interest map.</p>
+  <div class="card"><div class="chart-box"><canvas id="clusterChart"></canvas></div></div>
+  <div class="cluster-grid" id="cluster-grid"></div>
+</div>
+</section>
+
+<!-- 05: INBOUND VS OUTBOUND -->
+<section id="invitations">
+<div class="section-inner">
+  <div class="section-num">05</div>
+  <h2 class="section-title">Inbound vs Outbound</h2>
+  <p class="section-subtitle">Connection request patterns showing who's reaching out to whom, and how the balance shifted over time.</p>
+  <div class="stats-row" id="inv-stats"></div>
+  <div class="card"><div class="chart-box"><canvas id="invChart"></canvas></div></div>
+  <div class="card"><div class="insight-grid" id="inv-insights"></div></div>
+</div>
+</section>
+
+<!-- 06: CONNECTION QUALITY -->
+<section id="quality">
+<div class="section-inner">
+  <div class="section-num">06</div>
+  <h2 class="section-title">Connections vs Real Relationships</h2>
+  <p class="section-subtitle">Cross-referencing connections with messaging data to reveal network depth.</p>
+  <div class="stats-row" id="quality-stats"></div>
+  <div class="charts-pair">
+    <div class="card"><div class="card-title">Relationship Depth</div><div class="chart-box"><canvas id="donutChart"></canvas></div></div>
+    <div class="card"><div class="card-title">Messaged vs Never</div><div class="chart-box"><canvas id="barChart"></canvas></div></div>
+  </div>
+  <div class="card" id="quality-breakdown"></div>
+  <div class="card" id="quality-takeaways"></div>
+</div>
+</section>
+
+<!-- 07: CONNECTION TIMELINE -->
+<section id="timeline">
+<div class="section-inner">
+  <div class="section-num">07</div>
+  <h2 class="section-title">Connection Timeline</h2>
+  <p class="section-subtitle">Most recent connections — who initiated, their role, and message engagement since connecting.</p>
+  <div style="display:flex;gap:18px;margin-bottom:16px;font-size:0.78rem;color:var(--text-muted);">
+    <div style="display:flex;align-items:center;gap:5px;"><div class="direction-dot inbound"></div>Inbound</div>
+    <div style="display:flex;align-items:center;gap:5px;"><div class="direction-dot outbound"></div>Outbound</div>
+  </div>
+  <div class="timeline-table">
+    <div class="tl-header"><div></div><div>Name</div><div>Company</div><div>Connected</div><div>Msgs</div></div>
+    <div id="timeline-rows"></div>
+  </div>
+</div>
+</section>
+
+<!-- 08: INBOX QUALITY -->
+<section id="inbox">
+<div class="section-inner">
+  <div class="section-num">08</div>
+  <h2 class="section-title">Inbox Quality Analysis</h2>
+  <p class="section-subtitle">Categorizing inbound messages as genuine professional outreach vs. noise over time.</p>
+  <div class="stats-row" id="inbox-stats"></div>
+  <div class="card"><div class="chart-box"><canvas id="inboxChart"></canvas></div></div>
+  <div class="card"><div class="insight-grid" id="inbox-insights"></div></div>
+</div>
+</section>
+
+<!-- 09: CAREER STRATA -->
+<section id="strata">
+<div class="section-inner">
+  <div class="section-num">09</div>
+  <h2 class="section-title">Career Strata</h2>
+  <p class="section-subtitle">Your network as geological layers. Each stratum represents a career phase, with connections accumulated during that era. Hover to expand.</p>
+  <div class="stats-row" id="strata-stats"></div>
+  <div class="strata-container" id="strata-container"></div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>Built from a LinkedIn data export using <a href="https://github.com/thatrebeccarae/claude-code-skills/tree/main/skills/linkedin-data-viz" target="_blank">LinkedIn Data Viz</a> skill for Claude Code.</p>
+  <p style="margin-top:6px;">Inspired by <a href="https://loganhc-09.github.io/LinkedIn-Data-Export-Visualization/" target="_blank">Logan's LinkedIn Data Export Visualization</a>.</p>
+</footer>
+
+<!-- DATA INJECTION -->
+<script>
+const DATA = {{DATA}};
+</script>
+
+<!-- RENDERING -->
+<script>
+/* Chart.js dark theme defaults */
+Chart.defaults.color = '#8b949e';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.plugins.tooltip.backgroundColor = '#1E2329';
+Chart.defaults.plugins.tooltip.titleColor = '#fdfdfe';
+Chart.defaults.plugins.tooltip.bodyColor = '#8b949e';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.padding = 12;
+
+/* Visualization palette */
+const VIZ = {
+  teal: '#4eadab', lime: '#39FF14', cyan: '#6bc0be', purple: '#A855F7',
+  orange: '#FF5F1F', gold: '#FFD700', muted: '#8b949e', deep: '#4a9f9d',
+  slate: '#7d8590', pink: '#FF2D55'
+};
+const PALETTE = [VIZ.teal, VIZ.lime, VIZ.cyan, VIZ.purple, VIZ.orange, VIZ.gold, VIZ.muted, VIZ.deep, VIZ.slate, VIZ.pink, '#5ab8b6', '#7dcbc9', '#8ed6d4', '#9fe1df', '#b0ecea', '#c1f7f5', '#fdfdfe'];
+
+/* ─── Helper: create stat HTML ─── */
+function renderStats(containerId, stats) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+}
+
+/* ─── Helper: create insight HTML ─── */
+function renderInsights(containerId, insights) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = insights.map(i => `<div class="insight"><div class="insight-label">${i.label}</div><div class="insight-value">${i.value}</div></div>`).join('');
+}
+
+/* ─── NAV SCROLL-SPY ─── */
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-100px 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+/* ═══════ HERO ═══════ */
+if (DATA.hero) {
+  renderStats('hero-stats', DATA.hero.stats);
+}
+
+/* ═══════ 01: NETWORK UNIVERSE (D3) ═══════ */
+if (DATA.network) {
+  const nd = DATA.network;
+  renderStats('network-stats', nd.stats || []);
+
+  const gc = document.getElementById('graph');
+  const gw = gc.clientWidth, gh = 600;
+  const gsvg = d3.select('#graph').append('svg').attr('viewBox', `0 0 ${gw} ${gh}`).attr('preserveAspectRatio', 'xMidYMid meet');
+  const gScale = d3.scaleSqrt().domain([0, d3.max(nd.nodes, d => d.size)]).range([12, 60]);
+  const gSim = d3.forceSimulation(nd.nodes)
+    .force('link', d3.forceLink(nd.links).id(d => d.id).distance(d => 150 - d.strength * 3))
+    .force('charge', d3.forceManyBody().strength(-450))
+    .force('center', d3.forceCenter(gw / 2, gh / 2))
+    .force('collision', d3.forceCollide().radius(d => gScale(d.size) + 12));
+
+  const gLink = gsvg.append('g').selectAll('line').data(nd.links).join('line')
+    .attr('class', 'graph-link').attr('stroke-width', d => Math.max(1, d.strength * 0.5));
+
+  const gNode = gsvg.append('g').selectAll('g').data(nd.nodes).join('g')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) gSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e, d) => { if (!e.active) gSim.alphaTarget(0); d.fx = null; d.fy = null; })
+    );
+
+  gNode.append('circle')
+    .attr('r', d => gScale(d.size))
+    .attr('fill', d => PALETTE[d.group % PALETTE.length])
+    .attr('fill-opacity', 0.8)
+    .attr('stroke', d => PALETTE[d.group % PALETTE.length])
+    .attr('stroke-width', 2)
+    .attr('stroke-opacity', 0.9);
+
+  gNode.append('text').attr('class', 'node-label').attr('text-anchor', 'middle').attr('dy', '-0.3em').text(d => d.id);
+  gNode.append('text').attr('class', 'node-count').attr('text-anchor', 'middle').attr('dy', '1em').text(d => d.size);
+
+  const gTip = document.getElementById('tooltip');
+  gNode.on('mouseover', (e, d) => {
+    gTip.innerHTML = `<strong>${d.id}</strong><br>${d.size} connections<div class="companies">Top: ${d.top_companies.join(', ')}</div>`;
+    gTip.style.opacity = 1;
+    gTip.style.left = (e.offsetX + 15) + 'px';
+    gTip.style.top = (e.offsetY - 10) + 'px';
+  }).on('mouseout', () => { gTip.style.opacity = 0; });
+
+  gSim.on('tick', () => {
+    gLink.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    gNode.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  const gLeg = document.getElementById('legend');
+  [...nd.nodes].sort((a, b) => b.size - a.size).forEach(n => {
+    gLeg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[n.group % PALETTE.length]}"></div>${n.id} (${n.size})</div>`;
+  });
+}
+
+/* ═══════ 02: INFERENCES VS REALITY ═══════ */
+if (DATA.inferences) {
+  const inf = DATA.inferences;
+  renderStats('inference-stats', inf.stats || []);
+
+  // Inference cards
+  const ig = document.getElementById('inference-grid');
+  if (ig && inf.cards) {
+    ig.innerHTML = inf.cards.map((c, i) => {
+      const span = i === inf.cards.length - 1 && inf.cards.length % 2 === 1 ? ' style="grid-column:span 2;"' : '';
+      return `<div class="inference-card"${span}><div class="card-header"><span class="verdict ${c.verdict}">${c.verdict}</span><span class="card-label">${c.label}</span></div><div class="linkedin-says">${c.linkedin_says}</div><div class="reality"><strong>Reality:</strong> ${c.reality}</div></div>`;
+    }).join('');
+  }
+
+  // Follows grid
+  const ft = document.getElementById('follows-title');
+  if (ft && inf.follows_count) ft.textContent = `What You Actually Follow (${inf.follows_count} Companies)`;
+  const fg = document.getElementById('follows-grid');
+  if (fg && inf.follows) {
+    fg.innerHTML = inf.follows.map((f, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      return `<div class="follows-cat" style="border-left:3px solid ${color};"><div class="follows-cat-count" style="color:${color};">${f.count}</div><div class="follows-cat-label">${f.label}</div></div>`;
+    }).join('');
+  }
+
+  // Interest tags
+  const it = document.getElementById('interest-tags');
+  if (it && inf.interest_tags) {
+    it.innerHTML = inf.interest_tags.map(t => `<span class="tag ${t.type}">${t.name}</span>`).join('');
+  }
+
+  // Verdict rows
+  const vr = document.getElementById('verdict-rows');
+  if (vr && inf.verdicts) {
+    vr.innerHTML = inf.verdicts.map(v => `<div class="comparison-row"><div class="col-linkedin"><div class="col-label">${v.linkedin_label}</div><div class="col-value">${v.linkedin_value}</div></div><div class="vs-divider">vs</div><div class="col-reality"><div class="col-label">Reality</div><div class="col-value">${v.reality_value}</div></div></div>`).join('');
+  }
+}
+
+/* ═══════ 03: HIGH-VALUE MESSAGES ═══════ */
+if (DATA.messages) {
+  const msg = DATA.messages;
+  renderStats('msg-stats', msg.stats || []);
+
+  const mc = document.getElementById('msg-cards');
+  if (mc && msg.cards) {
+    mc.innerHTML = msg.cards.map(m => {
+      const tags = (m.tags || []).map(t => `<span class="msg-tag ${t.type}">${t.label}</span>`).join('');
+      const subject = m.subject ? `<div class="msg-subject">${m.subject}</div>` : '';
+      return `<div class="msg-card" data-type="${m.type}"><div class="urgency ${m.urgency}"></div><div class="msg-body"><div class="msg-header"><span class="msg-from">${m.from}</span><div class="msg-meta"><span class="msg-date">${m.date}</span><span class="msg-days ${m.age_class}">${m.age}</span></div></div>${subject}<div class="msg-content">${m.content}</div><div class="msg-tags">${tags}</div></div></div>`;
+    }).join('');
+  }
+
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.msg-card').forEach(c => {
+        c.classList.toggle('hidden', f !== 'all' && c.dataset.type !== f);
+      });
+    });
+  });
+}
+
+/* ═══════ 04: COMPANY FOLLOWS CLUSTERING ═══════ */
+if (DATA.company_clusters) {
+  const cc = DATA.company_clusters;
+
+  new Chart(document.getElementById('clusterChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: cc.chart_labels,
+      datasets: [{
+        data: cc.chart_data,
+        backgroundColor: cc.chart_labels.map((_, i) => {
+          const c = PALETTE[i % PALETTE.length];
+          return c + 'cc';
+        }),
+        borderColor: cc.chart_labels.map((_, i) => PALETTE[i % PALETTE.length]),
+        borderWidth: 1,
+        borderRadius: 6,
+        barPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 }, color: '#7d8590' } },
+        y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+      }
+    }
+  });
+
+  const cg = document.getElementById('cluster-grid');
+  if (cg && cc.clusters) {
+    cg.innerHTML = cc.clusters.map((cl, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      const items = cl.companies.map(c => `<span>${c}</span>`).join('');
+      return `<div class="cluster-card" style="border-left:3px solid ${color};"><div class="cluster-header"><span class="cluster-name" style="color:${color};">${cl.name}</span><span class="cluster-count" style="color:${color};">${cl.count}</span></div><div class="cluster-items">${items}</div></div>`;
+    }).join('');
+  }
+}
+
+/* ═══════ 05: INBOUND VS OUTBOUND ═══════ */
+if (DATA.invitations) {
+  const inv = DATA.invitations;
+  renderStats('inv-stats', inv.stats || []);
+  renderInsights('inv-insights', inv.insights || []);
+
+  new Chart(document.getElementById('invChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: inv.chart_labels,
+      datasets: [
+        { label: 'Inbound', data: inv.inbound, backgroundColor: VIZ.teal + 'cc', borderRadius: 6, barPercentage: 0.8, categoryPercentage: 0.7 },
+        { label: 'Outbound', data: inv.outbound, backgroundColor: VIZ.slate + 'aa', borderRadius: 6, barPercentage: 0.8, categoryPercentage: 0.7 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, padding: 14 } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' } },
+        y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+/* ═══════ 06: CONNECTION QUALITY ═══════ */
+if (DATA.quality) {
+  const q = DATA.quality;
+  renderStats('quality-stats', q.stats || []);
+
+  // Donut
+  new Chart(document.getElementById('donutChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: q.donut_labels,
+      datasets: [{
+        data: q.donut_data,
+        backgroundColor: [VIZ.gold + 'cc', VIZ.teal + 'cc', VIZ.purple + 'cc', VIZ.orange + 'aa', VIZ.deep + '99', 'rgba(255,255,255,0.08)'],
+        borderWidth: 2,
+        borderColor: '#161B22'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '55%',
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 10 }, color: '#8b949e', boxWidth: 10, padding: 8 } } }
+    }
+  });
+
+  // Stacked bar
+  if (q.bar_datasets) {
+    new Chart(document.getElementById('barChart').getContext('2d'), {
+      type: 'bar',
+      data: { labels: q.bar_labels, datasets: q.bar_datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        scales: { x: { stacked: true, grid: { color: 'rgba(255,255,255,0.08)' } }, y: { stacked: true, grid: { display: false } } },
+        plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 10 }, color: '#8b949e', boxWidth: 10, padding: 8 } } }
+      }
+    });
+  }
+
+  // Breakdown
+  const qb = document.getElementById('quality-breakdown');
+  if (qb && q.breakdown) {
+    qb.innerHTML = q.breakdown.map(b => {
+      return `<div class="breakdown-row"><div class="breakdown-dot" style="background:${b.color};"></div><div class="breakdown-label"><strong>${b.tier}</strong> — ${b.description}</div><div class="breakdown-count">${b.count}</div><div class="breakdown-pct">${b.pct}</div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${b.bar_width};background:${b.color};"></div></div></div>`;
+    }).join('');
+  }
+
+  // Takeaways
+  const qt = document.getElementById('quality-takeaways');
+  if (qt && q.takeaways) {
+    qt.innerHTML = q.takeaways.map(t => `<div class="takeaway">${t}</div>`).join('');
+  }
+}
+
+/* ═══════ 07: CONNECTION TIMELINE ═══════ */
+if (DATA.timeline) {
+  const tl = DATA.timeline;
+  const tr = document.getElementById('timeline-rows');
+  if (tr && tl.rows) {
+    tr.innerHTML = tl.rows.map(r => {
+      const barStyle = r.msg_count > 0 ? `<div class="msg-bar" style="width:${Math.min(70, r.msg_count * 4)}px;${r.msg_count > 8 ? 'background:' + VIZ.gold + ';' : ''}"></div>` : '';
+      return `<div class="tl-row"><div class="direction-dot ${r.direction}"></div><div class="tl-name">${r.name}</div><div class="tl-company">${r.company}</div><div class="tl-date">${r.date}</div><div class="tl-msgs">${barStyle}<div class="msg-count">${r.msg_count}</div></div></div>`;
+    }).join('');
+  }
+}
+
+/* ═══════ 08: INBOX QUALITY ═══════ */
+if (DATA.inbox) {
+  const iq = DATA.inbox;
+  renderStats('inbox-stats', iq.stats || []);
+  renderInsights('inbox-insights', iq.insights || []);
+
+  new Chart(document.getElementById('inboxChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: iq.chart_labels,
+      datasets: [
+        { label: 'Genuine', data: iq.genuine, backgroundColor: VIZ.teal + 'cc', borderRadius: 4, barPercentage: 0.85 },
+        { label: 'Noise', data: iq.noise, backgroundColor: VIZ.pink + 'aa', borderRadius: 4, barPercentage: 0.85 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } },
+        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+      },
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, padding: 14 } },
+        tooltip: {
+          callbacks: {
+            afterBody: function(ctx) {
+              const i = ctx[0].dataIndex;
+              const t = iq.genuine[i] + iq.noise[i];
+              return t > 0 ? `Genuine: ${((iq.genuine[i] / t) * 100).toFixed(1)}%` : '';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ═══════ 09: CAREER STRATA ═══════ */
+if (DATA.strata) {
+  const st = DATA.strata;
+  renderStats('strata-stats', st.stats || []);
+
+  const sc = document.getElementById('strata-container');
+  if (sc && st.layers) {
+    sc.innerHTML = st.layers.map((l, i) => {
+      const layerIdx = st.layers.length - 1 - i;
+      return `<div class="strata-layer layer-${Math.min(layerIdx, 8)}"><div><div class="strata-era">${l.era}</div><div class="strata-desc">${l.desc}</div><div class="strata-detail">${l.detail}</div></div><div class="strata-right"><div class="strata-count">${l.count}</div><div class="strata-pct">${l.pct}</div></div></div>`;
+    }).join('');
+  }
+}
+</script>
+</body>
+</html>

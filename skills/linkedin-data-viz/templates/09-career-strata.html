@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Strata — LinkedIn Data Visualization</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+{{THEME_CSS}}
+</style>
+</head>
+<body>
+<div class="container" style="padding:40px;">
+<h1 style="font-size:2.2rem;margin-bottom:8px;">Career Strata</h1>
+<p class="section-subtitle" id="subtitle"></p>
+
+<div class="stats-row" id="stats"></div>
+
+<div class="strata-container" id="strata-container"></div>
+</div>
+
+<script>
+const DATA = {{DATA}};
+
+document.getElementById('subtitle').textContent = DATA.subtitle || '';
+const statsEl = document.getElementById('stats');
+if (DATA.stats) statsEl.innerHTML = DATA.stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+const sc = document.getElementById('strata-container');
+if (DATA.layers) {
+  sc.innerHTML = DATA.layers.map((l, i) => {
+    const layerIdx = DATA.layers.length - 1 - i;
+    return `<div class="strata-layer layer-${Math.min(layerIdx, 8)}"><div><div class="strata-era">${l.era}</div><div class="strata-desc">${l.desc}</div><div class="strata-detail">${l.detail}</div></div><div class="strata-right"><div class="strata-count">${l.count}</div><div class="strata-pct">${l.pct}</div></div></div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

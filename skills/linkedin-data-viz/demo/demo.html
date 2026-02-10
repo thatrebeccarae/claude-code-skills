@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Data Visualization — Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ============================================================
+   Carrier Dark Theme — Inline for Demo
+   ============================================================ */
+:root {
+  --bg-primary: #0D1117; --bg-surface: #161B22; --bg-elevated: #1E2329;
+  --bg-glass: rgba(255,255,255,0.04);
+  --text-primary: #fdfdfe; --text-secondary: #8b949e; --text-muted: #7d8590;
+  --accent-primary: #4eadab; --accent-hover: #6bc0be;
+  --viz-teal: #4eadab; --viz-lime: #39FF14; --viz-cyan: #6bc0be;
+  --viz-purple: #A855F7; --viz-orange: #FF5F1F; --viz-gold: #FFD700;
+  --viz-muted: #8b949e; --viz-deep: #4a9f9d; --viz-slate: #7d8590;
+  --viz-pink: #FF2D55;
+  --border-subtle: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.12);
+  --max-w: 1100px; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;scroll-padding-top:72px}
+body{background:var(--bg-primary);color:var(--text-secondary);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.6}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
+h1,h2,h3{color:var(--text-primary);font-weight:300;letter-spacing:-0.03em}
+.container{max-width:var(--max-w);margin:0 auto;padding:0 40px}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);padding:0 40px}
+.nav-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 0}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-brand{font-weight:600;font-size:0.85rem;color:var(--text-primary);margin-right:12px;white-space:nowrap;flex-shrink:0}
+.nav-link{padding:6px 14px;border-radius:20px;font-size:0.75rem;font-weight:500;color:var(--text-muted);text-decoration:none;white-space:nowrap;border:1px solid transparent;transition:all 0.15s}
+.nav-link:hover{border-color:var(--border-subtle);background:var(--bg-surface);color:var(--text-secondary)}
+.nav-link.active{background:var(--accent-primary);color:var(--bg-primary);border-color:var(--accent-primary)}
+
+/* Hero */
+.hero{padding:80px 40px 60px;text-align:center}
+.hero h1{font-size:3rem;letter-spacing:-0.04em;margin-bottom:12px}
+.hero .lead{font-size:1.05rem;color:var(--text-secondary);max-width:640px;margin:0 auto 40px}
+.hero-stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap}
+
+/* Sections */
+section{padding:60px 40px}
+section:nth-child(even of section){background:var(--bg-surface)}
+.section-inner{max-width:var(--max-w);margin:0 auto}
+.section-num{font-size:0.7rem;font-weight:600;color:var(--accent-primary);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.section-title{font-size:2rem;margin-bottom:8px}
+.section-subtitle{font-size:0.95rem;color:var(--text-secondary);margin-bottom:32px;max-width:700px}
+
+/* Cards */
+.card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;transition:transform 150ms,box-shadow 150ms,border-color 150ms}
+.card:hover{border-color:var(--border-hover)}
+.card-title{font-weight:500;font-size:1rem;color:var(--text-primary);margin-bottom:16px}
+.chart-box{height:420px;position:relative}
+
+/* Stats */
+.stats-row{display:flex;gap:32px;margin-bottom:28px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-value{font-size:1.8rem;font-weight:300;color:var(--accent-primary);font-family:'JetBrains Mono',monospace}
+.stat-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em}
+
+/* Insights */
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.insight{padding:16px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border-subtle)}
+.insight-label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
+.insight-value{font-size:0.88rem;font-weight:500;color:var(--text-primary)}
+.takeaway{font-size:0.88rem;color:var(--text-secondary);margin-bottom:10px;padding-left:16px;border-left:3px solid var(--border-subtle)}
+.takeaway strong{color:var(--text-primary)}
+
+/* D3 Graph */
+#graph-container{position:relative}#graph{width:100%;height:600px}#graph svg{width:100%;height:100%}
+.node-label{font-family:'Inter',sans-serif;font-weight:500;font-size:11px;fill:var(--text-primary);pointer-events:none}
+.node-count{font-family:'Inter',sans-serif;font-weight:300;font-size:10px;fill:var(--text-muted);pointer-events:none}
+.graph-link{stroke:rgba(255,255,255,0.1);stroke-opacity:0.6}
+.graph-tooltip{position:absolute;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 16px;font-size:0.85rem;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,0.4);pointer-events:none;opacity:0;transition:opacity 0.2s;max-width:260px;z-index:10;color:var(--text-primary)}
+.graph-tooltip strong{font-weight:600}.graph-tooltip .companies{color:var(--text-muted);font-size:0.8rem;margin-top:4px}
+.graph-legend{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border-subtle)}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:0.75rem;color:var(--text-secondary)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* Inference */
+.inference-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.inference-grid{grid-template-columns:1fr}}
+.inference-card{border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:18px;background:var(--bg-elevated);transition:transform 0.15s}
+.inference-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.verdict{display:inline-block;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 9px;border-radius:20px}
+.verdict.accurate{background:rgba(78,173,171,0.15);color:var(--accent-primary)}
+.verdict.partial{background:rgba(255,215,0,0.12);color:var(--viz-gold)}
+.verdict.wrong{background:rgba(255,45,85,0.12);color:var(--viz-pink)}
+.card-label{font-weight:500;font-size:0.9rem;color:var(--text-primary)}
+.linkedin-says{font-size:0.82rem;color:var(--text-muted);margin-bottom:6px}
+.reality{font-size:0.85rem;color:var(--text-secondary)}.reality strong{color:var(--text-primary)}
+
+/* Tags */
+.follows-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.follows-cat{border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:12px;text-align:center;background:var(--bg-elevated)}
+.follows-cat-count{font-size:1.5rem;font-weight:300;font-family:'JetBrains Mono',monospace}
+.follows-cat-label{font-size:0.72rem;color:var(--text-muted);margin-top:2px}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;border:1px solid var(--border-subtle);color:var(--text-muted);background:var(--bg-elevated)}
+.tag.relevant{background:rgba(78,173,171,0.12);border-color:rgba(78,173,171,0.3);color:var(--accent-primary)}
+.tag.irrelevant{background:rgba(255,45,85,0.08);border-color:rgba(255,45,85,0.15);color:var(--viz-pink)}
+.tag.neutral{background:var(--bg-elevated);color:var(--text-secondary)}
+
+/* Comparison */
+.comparison-row{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--border-subtle)}
+.comparison-row:last-child{border-bottom:none}.col-linkedin{text-align:right}
+.vs-divider{font-size:0.68rem;color:var(--text-muted);font-weight:600;padding-top:4px;text-transform:uppercase;letter-spacing:0.1em}
+.col-label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px}
+.col-value{font-size:0.85rem}.col-linkedin .col-value{color:var(--viz-pink)}.col-reality .col-value{color:var(--accent-primary);font-weight:500}
+
+/* Messages */
+.filters{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap}
+.filter-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border-subtle);background:var(--bg-surface);font-size:0.78rem;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.15s;color:var(--text-muted)}
+.filter-btn.active{background:var(--accent-primary);color:var(--bg-primary);border-color:var(--accent-primary)}
+.filter-btn:hover{border-color:var(--accent-primary);color:var(--text-secondary)}
+.msg-cards{display:flex;flex-direction:column;gap:10px}
+.msg-card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:16px 20px;display:flex;gap:16px;align-items:flex-start;transition:transform 0.15s,box-shadow 0.15s}
+.msg-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.msg-card.hidden{display:none}
+.urgency{width:4px;border-radius:2px;min-height:50px;flex-shrink:0;align-self:stretch}
+.urgency.hot{background:var(--viz-gold)}.urgency.warm{background:var(--accent-primary)}.urgency.cool{background:var(--border-subtle)}
+.msg-body{flex:1;min-width:0}
+.msg-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;flex-wrap:wrap;gap:6px}
+.msg-from{font-weight:600;font-size:0.9rem;color:var(--text-primary)}
+.msg-meta{display:flex;gap:10px;align-items:center}
+.msg-date{font-size:0.72rem;color:var(--text-muted)}
+.msg-days{font-size:0.68rem;font-weight:600;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.msg-days.urgent{background:rgba(255,215,0,0.12);color:var(--viz-gold)}
+.msg-days.moderate{background:rgba(78,173,171,0.12);color:var(--accent-primary)}
+.msg-days.old{background:var(--bg-elevated);color:var(--text-muted)}
+.msg-subject{font-size:0.78rem;color:var(--viz-purple);font-weight:500;margin-bottom:4px}
+.msg-content{font-size:0.82rem;color:var(--text-secondary);line-height:1.5}
+.msg-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.msg-tag{font-size:0.65rem;padding:2px 7px;border-radius:10px;background:var(--bg-elevated);color:var(--text-muted);border:1px solid var(--border-subtle)}
+.msg-tag.opportunity{background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.15);color:var(--viz-gold)}
+.msg-tag.relationship{background:rgba(78,173,171,0.08);border-color:rgba(78,173,171,0.15);color:var(--accent-primary)}
+.msg-tag.network{background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.15);color:var(--viz-purple)}
+
+/* Clusters */
+.cluster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:20px}
+.cluster-card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:16px;transition:transform 0.15s}
+.cluster-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.cluster-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.cluster-name{font-weight:600;font-size:0.85rem}
+.cluster-count{font-size:1.3rem;font-weight:300;font-family:'JetBrains Mono',monospace}
+.cluster-items{font-size:0.75rem;color:var(--text-muted);line-height:1.8}
+.cluster-items span{display:inline-block;padding:1px 7px;background:var(--bg-elevated);border-radius:4px;margin:2px}
+
+/* Charts Pair */
+.charts-pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:768px){.charts-pair{grid-template-columns:1fr}}
+.breakdown-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border-subtle)}
+.breakdown-row:last-child{border-bottom:none}
+.breakdown-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.breakdown-label{flex:1;font-size:0.85rem;color:var(--text-secondary)}.breakdown-label strong{color:var(--text-primary)}
+.breakdown-count{font-size:1.1rem;font-weight:300;min-width:45px;text-align:right;color:var(--text-primary);font-family:'JetBrains Mono',monospace}
+.breakdown-pct{font-size:0.72rem;color:var(--text-muted);min-width:38px;text-align:right}
+.breakdown-bar{height:5px;border-radius:3px;flex:0 0 100px;background:var(--bg-elevated);position:relative;overflow:hidden}
+.breakdown-fill{position:absolute;left:0;top:0;height:100%;border-radius:3px}
+
+/* Timeline */
+.timeline-table{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden}
+.tl-header{display:grid;grid-template-columns:30px 1fr 150px 100px 70px;gap:10px;padding:10px 18px;background:var(--bg-elevated);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border-subtle)}
+.tl-row{display:grid;grid-template-columns:30px 1fr 150px 100px 70px;gap:10px;padding:10px 18px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.1s}
+.tl-row:hover{background:var(--bg-elevated)}.tl-row:last-child{border-bottom:none}
+.direction-dot{width:9px;height:9px;border-radius:50%;margin:0 auto}
+.direction-dot.inbound{background:var(--accent-primary)}.direction-dot.outbound{background:var(--viz-gold)}.direction-dot.unknown{background:var(--text-muted)}
+.tl-name{font-weight:500;font-size:0.85rem;color:var(--text-primary)}
+.tl-company{font-size:0.75rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-date{font-size:0.78rem;color:var(--text-secondary)}.tl-msgs{text-align:center}
+.msg-bar{display:inline-block;height:5px;border-radius:3px;background:var(--accent-primary)}
+.msg-count{font-size:0.72rem;color:var(--text-muted);margin-top:2px}
+@media(max-width:768px){.tl-header,.tl-row{grid-template-columns:26px 1fr 70px}.tl-company,.tl-date{display:none}}
+
+/* Strata */
+.strata-container{border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-subtle)}
+.strata-layer{display:flex;justify-content:space-between;align-items:center;padding:22px 28px;border-bottom:1px solid rgba(255,255,255,0.06);transition:all 0.2s;cursor:default}
+.strata-layer:hover{filter:brightness(1.15)}.strata-layer:hover .strata-detail{opacity:1;max-height:60px;margin-top:6px}
+.strata-era{font-weight:600;font-size:0.9rem;letter-spacing:-0.01em}
+.strata-desc{font-size:0.8rem;opacity:0.7;margin-top:2px}
+.strata-detail{font-size:0.73rem;opacity:0;max-height:0;overflow:hidden;transition:all 0.3s;line-height:1.5}
+.strata-count{font-size:1.8rem;font-weight:300;opacity:0.9;font-family:'JetBrains Mono',monospace}
+.strata-pct{font-size:0.68rem;opacity:0.5;font-family:'JetBrains Mono',monospace}
+.strata-right{text-align:right;flex-shrink:0;margin-left:20px}
+.layer-0{background:#0D1117;color:#4eadab}.layer-1{background:#111820;color:#5ab8b6}
+.layer-2{background:#151E28;color:#6bc0be}.layer-3{background:#1A2530;color:#7dcbc9}
+.layer-4{background:#1E2B38;color:#8ed6d4}.layer-5{background:#233240;color:#9fe1df}
+.layer-6{background:#283948;color:#b0ecea}.layer-7{background:#2D4050;color:#c1f7f5}
+.layer-8{background:#324758;color:#fdfdfe}
+
+/* Footer */
+.footer{text-align:center;padding:48px 40px;font-size:0.8rem;color:var(--text-muted);border-top:1px solid var(--border-subtle)}
+.footer a{color:var(--accent-primary);text-decoration:none}.footer a:hover{color:var(--accent-hover)}
+
+/* Demo banner */
+.demo-banner{background:rgba(78,173,171,0.1);border-bottom:1px solid rgba(78,173,171,0.2);padding:10px 40px;text-align:center;font-size:0.82rem;color:var(--accent-primary)}
+.demo-banner a{color:var(--text-primary);font-weight:600;text-decoration:none;border-bottom:1px solid var(--accent-primary)}
+</style>
+</head>
+<body>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner">
+  This is a demo with sample data. <a href="index.html">Install the skill</a> to visualize your own LinkedIn export.
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="nav-brand">LinkedIn Data</span>
+    <a href="#network" class="nav-link">Network</a>
+    <a href="#inferences" class="nav-link">Inferences</a>
+    <a href="#messages" class="nav-link">Messages</a>
+    <a href="#companies" class="nav-link">Companies</a>
+    <a href="#invitations" class="nav-link">Invitations</a>
+    <a href="#quality" class="nav-link">Quality</a>
+    <a href="#timeline" class="nav-link">Timeline</a>
+    <a href="#inbox" class="nav-link">Inbox</a>
+    <a href="#strata" class="nav-link">Strata</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <h1>LinkedIn Data Export Visualization</h1>
+  <p class="lead">A complete visual analysis of your LinkedIn data — connections, messages, invitations, and followed companies.</p>
+  <div class="hero-stats" id="hero-stats"></div>
+</header>
+
+<!-- 01: NETWORK UNIVERSE -->
+<section id="network">
+<div class="section-inner">
+  <div class="section-num">01</div>
+  <h2 class="section-title">Network Universe</h2>
+  <p class="section-subtitle">Connections clustered by role and industry. Node size reflects cluster population. Links show shared employers between groups. Drag nodes to explore.</p>
+  <div class="stats-row" id="network-stats"></div>
+  <div class="card" id="graph-container">
+    <div id="graph"></div>
+    <div class="graph-tooltip" id="tooltip"></div>
+    <div class="graph-legend" id="legend"></div>
+  </div>
+</div>
+</section>
+
+<!-- 02: INFERENCES VS REALITY -->
+<section id="inferences">
+<div class="section-inner">
+  <div class="section-num">02</div>
+  <h2 class="section-title">Inferences vs Reality</h2>
+  <p class="section-subtitle">What LinkedIn thinks it knows about you, compared to what your actual data reveals.</p>
+  <div class="stats-row" id="inference-stats"></div>
+  <div class="card">
+    <div class="card-title">LinkedIn's Inferences</div>
+    <div class="inference-grid" id="inference-grid"></div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="follows-title">What You Actually Follow</div>
+    <div class="follows-grid" id="follows-grid"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ad Targeting: What LinkedIn Sells About You</div>
+    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;">LinkedIn assigns you to interest categories for advertisers. Sample — <span style="color:var(--accent-primary);">relevant</span> vs <span style="color:var(--viz-pink);">questionable</span>:</p>
+    <div class="tag-cloud" id="interest-tags"></div>
+    <div style="margin-top:16px;">
+      <div class="card-title" style="font-size:0.9rem;">The Verdict</div>
+      <div id="verdict-rows"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 03: HIGH-VALUE MESSAGES -->
+<section id="messages">
+<div class="section-inner">
+  <div class="section-num">03</div>
+  <h2 class="section-title">High-Value Messages</h2>
+  <p class="section-subtitle">Unanswered LinkedIn messages ranked by potential value. Filtered to surface genuine opportunities.</p>
+  <div class="stats-row" id="msg-stats"></div>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All Genuine</button>
+    <button class="filter-btn" data-filter="opportunity">Opportunities</button>
+    <button class="filter-btn" data-filter="relationship">Relationships</button>
+    <button class="filter-btn" data-filter="network">Networking</button>
+  </div>
+  <div class="msg-cards" id="msg-cards"></div>
+</div>
+</section>
+
+<!-- 04: COMPANY FOLLOWS CLUSTERING -->
+<section id="companies">
+<div class="section-inner">
+  <div class="section-num">04</div>
+  <h2 class="section-title">Company Follows Clustering</h2>
+  <p class="section-subtitle">Followed companies grouped by theme. Your professional interest map.</p>
+  <div class="card"><div class="chart-box"><canvas id="clusterChart"></canvas></div></div>
+  <div class="cluster-grid" id="cluster-grid"></div>
+</div>
+</section>
+
+<!-- 05: INBOUND VS OUTBOUND -->
+<section id="invitations">
+<div class="section-inner">
+  <div class="section-num">05</div>
+  <h2 class="section-title">Inbound vs Outbound</h2>
+  <p class="section-subtitle">Connection request patterns showing who's reaching out to whom, and how the balance shifted over time.</p>
+  <div class="stats-row" id="inv-stats"></div>
+  <div class="card"><div class="chart-box"><canvas id="invChart"></canvas></div></div>
+  <div class="card"><div class="insight-grid" id="inv-insights"></div></div>
+</div>
+</section>
+
+<!-- 06: CONNECTION QUALITY -->
+<section id="quality">
+<div class="section-inner">
+  <div class="section-num">06</div>
+  <h2 class="section-title">Connections vs Real Relationships</h2>
+  <p class="section-subtitle">Cross-referencing connections with messaging data to reveal network depth.</p>
+  <div class="stats-row" id="quality-stats"></div>
+  <div class="charts-pair">
+    <div class="card"><div class="card-title">Relationship Depth</div><div class="chart-box"><canvas id="donutChart"></canvas></div></div>
+    <div class="card"><div class="card-title">Messaged vs Never</div><div class="chart-box"><canvas id="barChart"></canvas></div></div>
+  </div>
+  <div class="card" id="quality-breakdown"></div>
+  <div class="card" id="quality-takeaways"></div>
+</div>
+</section>
+
+<!-- 07: CONNECTION TIMELINE -->
+<section id="timeline">
+<div class="section-inner">
+  <div class="section-num">07</div>
+  <h2 class="section-title">Connection Timeline</h2>
+  <p class="section-subtitle">Most recent connections — who initiated, their role, and message engagement since connecting.</p>
+  <div style="display:flex;gap:18px;margin-bottom:16px;font-size:0.78rem;color:var(--text-muted);">
+    <div style="display:flex;align-items:center;gap:5px;"><div class="direction-dot inbound"></div>Inbound</div>
+    <div style="display:flex;align-items:center;gap:5px;"><div class="direction-dot outbound"></div>Outbound</div>
+  </div>
+  <div class="timeline-table">
+    <div class="tl-header"><div></div><div>Name</div><div>Company</div><div>Connected</div><div>Msgs</div></div>
+    <div id="timeline-rows"></div>
+  </div>
+</div>
+</section>
+
+<!-- 08: INBOX QUALITY -->
+<section id="inbox">
+<div class="section-inner">
+  <div class="section-num">08</div>
+  <h2 class="section-title">Inbox Quality Analysis</h2>
+  <p class="section-subtitle">Categorizing inbound messages as genuine professional outreach vs. noise over time.</p>
+  <div class="stats-row" id="inbox-stats"></div>
+  <div class="card"><div class="chart-box"><canvas id="inboxChart"></canvas></div></div>
+  <div class="card"><div class="insight-grid" id="inbox-insights"></div></div>
+</div>
+</section>
+
+<!-- 09: CAREER STRATA -->
+<section id="strata">
+<div class="section-inner">
+  <div class="section-num">09</div>
+  <h2 class="section-title">Career Strata</h2>
+  <p class="section-subtitle">Your network as geological layers. Each stratum represents a career phase, with connections accumulated during that era. Hover to expand.</p>
+  <div class="stats-row" id="strata-stats"></div>
+  <div class="strata-container" id="strata-container"></div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>Built from a LinkedIn data export using <a href="https://github.com/thatrebeccarae/claude-code-skills/tree/main/skills/linkedin-data-viz" target="_blank">LinkedIn Data Viz</a> skill for Claude Code.</p>
+  <p style="margin-top:6px;">Inspired by <a href="https://loganhc-09.github.io/LinkedIn-Data-Export-Visualization/" target="_blank">Logan's LinkedIn Data Export Visualization</a>.</p>
+</footer>
+
+<!-- SAMPLE DATA -->
+<script>
+const DATA = {
+  hero: {
+    stats: [
+      { value: "1,847", label: "Connections" },
+      { value: "4,210", label: "Messages" },
+      { value: "142", label: "Companies Followed" },
+      { value: "12 yrs", label: "Network Span" }
+    ]
+  },
+  network: {
+    stats: [
+      { value: "1,847", label: "Total Connections" },
+      { value: "10", label: "Role Clusters" },
+      { value: "347", label: "Companies" }
+    ],
+    nodes: [
+      { id: "Marketing", size: 412, group: 0, top_companies: ["Ogilvy Group", "HubSpot", "Mailchimp"] },
+      { id: "Tech / Engineering", size: 318, group: 1, top_companies: ["Stripe", "Vercel", "Datadog"] },
+      { id: "Founders", size: 247, group: 2, top_companies: ["YC W23", "Sequoia Scout", "First Round"] },
+      { id: "Sales", size: 196, group: 3, top_companies: ["Salesforce", "Gong", "Outreach"] },
+      { id: "Product", size: 155, group: 4, top_companies: ["Figma", "Linear", "Notion"] },
+      { id: "Design", size: 127, group: 5, top_companies: ["IDEO", "Pentagram", "Fantasy"] },
+      { id: "Recruiting", size: 114, group: 6, top_companies: ["Korn Ferry", "Lever", "Greenhouse"] },
+      { id: "Consulting", size: 98, group: 7, top_companies: ["McKinsey", "Deloitte", "BCG"] },
+      { id: "Executive", size: 92, group: 8, top_companies: ["Stripe", "Notion", "Figma"] },
+      { id: "Operations", size: 88, group: 9, top_companies: ["Shopify", "Flexport", "DoorDash"] }
+    ],
+    links: [
+      { source: "Marketing", target: "Sales", strength: 18 },
+      { source: "Marketing", target: "Founders", strength: 15 },
+      { source: "Marketing", target: "Product", strength: 12 },
+      { source: "Tech / Engineering", target: "Product", strength: 22 },
+      { source: "Tech / Engineering", target: "Founders", strength: 14 },
+      { source: "Tech / Engineering", target: "Design", strength: 10 },
+      { source: "Founders", target: "Executive", strength: 16 },
+      { source: "Founders", target: "Consulting", strength: 8 },
+      { source: "Sales", target: "Operations", strength: 11 },
+      { source: "Sales", target: "Recruiting", strength: 9 },
+      { source: "Product", target: "Design", strength: 19 },
+      { source: "Product", target: "Executive", strength: 7 },
+      { source: "Design", target: "Marketing", strength: 13 },
+      { source: "Recruiting", target: "Executive", strength: 10 },
+      { source: "Consulting", target: "Executive", strength: 12 },
+      { source: "Operations", target: "Tech / Engineering", strength: 8 }
+    ]
+  },
+  inferences: {
+    stats: [
+      { value: "5", label: "Inferences" },
+      { value: "3", label: "Accurate" },
+      { value: "1", label: "Partial" },
+      { value: "1", label: "Wrong" }
+    ],
+    cards: [
+      { label: "Industry", verdict: "accurate", linkedin_says: "Marketing & Advertising", reality: "86% of connections work in marketing, advertising, or martech. Highly accurate." },
+      { label: "Job Function", verdict: "partial", linkedin_says: "Marketing Manager", reality: "More accurately described as Fractional CMO / Marketing Strategist. The \"manager\" label undersells seniority." },
+      { label: "Seniority", verdict: "accurate", linkedin_says: "Senior", reality: "Network is 62% Director+ level. Connection quality confirms senior positioning." },
+      { label: "Company Size", verdict: "wrong", linkedin_says: "1,001-5,000 employees", reality: "78% of recent connections are at companies with under 200 employees. Heavy startup/scale-up bias." },
+      { label: "Interests", verdict: "accurate", linkedin_says: "E-commerce, SaaS, Growth Marketing", reality: "Company follows and message topics align strongly with DTC e-commerce and SaaS growth." }
+    ],
+    follows_count: 142,
+    follows: [
+      { count: 32, label: "DTC / E-Commerce" },
+      { count: 28, label: "Marketing / Martech" },
+      { count: 24, label: "Recruiting / HR Tech" },
+      { count: 18, label: "Tech / SaaS" },
+      { count: 15, label: "Luxury / Fashion" },
+      { count: 12, label: "Media / Content" },
+      { count: 8, label: "Agency / Consulting" },
+      { count: 5, label: "Finance / Fintech" }
+    ],
+    interest_tags: [
+      { name: "E-commerce", type: "relevant" },
+      { name: "Digital Marketing", type: "relevant" },
+      { name: "SaaS", type: "relevant" },
+      { name: "Growth Hacking", type: "relevant" },
+      { name: "Email Marketing", type: "relevant" },
+      { name: "Content Strategy", type: "relevant" },
+      { name: "Startup Ecosystem", type: "relevant" },
+      { name: "Data Analytics", type: "neutral" },
+      { name: "Cloud Computing", type: "neutral" },
+      { name: "Machine Learning", type: "neutral" },
+      { name: "Project Management", type: "neutral" },
+      { name: "Real Estate", type: "irrelevant" },
+      { name: "Oil & Gas", type: "irrelevant" },
+      { name: "Supply Chain", type: "irrelevant" },
+      { name: "Pharmaceuticals", type: "irrelevant" }
+    ],
+    verdicts: [
+      { linkedin_label: "Industry", linkedin_value: "Marketing & Advertising", reality_value: "DTC E-Commerce + Martech" },
+      { linkedin_label: "Function", linkedin_value: "Marketing Manager", reality_value: "Fractional CMO / Strategist" },
+      { linkedin_label: "Company Size", linkedin_value: "1,001-5,000", reality_value: "Under 200 (startup/scale-up)" }
+    ]
+  },
+  messages: {
+    stats: [
+      { value: "28", label: "Unanswered" },
+      { value: "8", label: "Hot" },
+      { value: "12", label: "Warm" },
+      { value: "8", label: "Cool" }
+    ],
+    cards: [
+      { from: "Jordan Ellis", type: "opportunity", urgency: "hot", date: "Jan 28, 2026", age: "13d ago", age_class: "urgent", subject: "CMO Role - Series B Martech Startup", content: "We're building something exciting in the email infrastructure space. I'd love to chat about a potential CMO opportunity.", tags: [{ type: "opportunity", label: "opportunity" }, { type: "relationship", label: "recruiter" }] },
+      { from: "Priya Sharma", type: "relationship", urgency: "hot", date: "Jan 25, 2026", age: "16d ago", age_class: "urgent", content: "Your post on attribution modeling was really insightful. I'm running into similar challenges at our scale. Would you be open to a 20-min call?", tags: [{ type: "relationship", label: "relationship" }] },
+      { from: "Marcus Chen", type: "opportunity", urgency: "hot", date: "Jan 22, 2026", age: "19d ago", age_class: "urgent", subject: "Partnership Opportunity", content: "We just closed our Series A and I think there's a natural partnership between what you're building and our platform. Interested in exploring?", tags: [{ type: "opportunity", label: "opportunity" }, { type: "network", label: "partnership" }] },
+      { from: "Alex Rivera", type: "network", urgency: "warm", date: "Jan 18, 2026", age: "23d ago", age_class: "moderate", content: "Great meeting you at SaaStr! I'd love to stay connected and share notes on the lifecycle marketing session.", tags: [{ type: "network", label: "networking" }] },
+      { from: "Taylor Brooks", type: "opportunity", urgency: "warm", date: "Jan 12, 2026", age: "29d ago", age_class: "moderate", subject: "Consulting Project", content: "We're looking for someone to audit our Klaviyo setup and build a 90-day roadmap. Are you taking on new clients?", tags: [{ type: "opportunity", label: "opportunity" }] },
+      { from: "Morgan Lee", type: "relationship", urgency: "warm", date: "Jan 8, 2026", age: "33d ago", age_class: "moderate", content: "Haven't caught up in a while! Saw you moved into fractional work. I did the same thing last year and have some insights to share.", tags: [{ type: "relationship", label: "relationship" }] },
+      { from: "Casey Nguyen", type: "network", urgency: "cool", date: "Dec 15, 2025", age: "57d ago", age_class: "old", content: "Enjoyed your newsletter this week. Adding you to my list of people I want to connect with in 2026.", tags: [{ type: "network", label: "networking" }] },
+      { from: "Robin Kim", type: "opportunity", urgency: "cool", date: "Nov 20, 2025", age: "82d ago", age_class: "old", subject: "Speaking Opportunity", content: "We're organizing a virtual summit on email marketing trends. Would you be interested in a 30-min talk?", tags: [{ type: "opportunity", label: "opportunity" }, { type: "network", label: "speaking" }] }
+    ]
+  },
+  company_clusters: {
+    chart_labels: ["DTC/E-Comm", "Martech", "Recruiting", "Tech/SaaS", "Luxury", "Media", "Agency", "Finance"],
+    chart_data: [32, 28, 24, 18, 15, 12, 8, 5],
+    clusters: [
+      { name: "DTC / E-Commerce", count: 32, companies: ["Glossier", "Warby Parker", "Allbirds", "Away", "Casper", "Everlane", "Outdoor Voices"] },
+      { name: "Marketing / Martech", count: 28, companies: ["Klaviyo", "HubSpot", "Mailchimp", "Braze", "Iterable", "Customer.io", "ActiveCampaign"] },
+      { name: "Recruiting / HR Tech", count: 24, companies: ["Greenhouse", "Lever", "Ashby", "Korn Ferry", "Heidrick & Struggles", "Robert Half"] },
+      { name: "Tech / SaaS", count: 18, companies: ["Stripe", "Vercel", "Linear", "Notion", "Figma", "Datadog"] },
+      { name: "Luxury / Fashion", count: 15, companies: ["LVMH", "Kering", "Tiffany & Co.", "Hermes", "Chanel"] },
+      { name: "Media / Content", count: 12, companies: ["Morning Brew", "The Hustle", "Substack", "Beehiiv", "ConvertKit"] },
+      { name: "Agency / Consulting", count: 8, companies: ["Ogilvy", "R/GA", "Publicis", "McKinsey"] },
+      { name: "Finance / Fintech", count: 5, companies: ["Stripe", "Plaid", "Mercury", "Brex"] }
+    ]
+  },
+  invitations: {
+    stats: [
+      { value: "389", label: "Total Invitations" },
+      { value: "68%", label: "Inbound Rate" },
+      { value: "Jan '26", label: "Peak Inbound" }
+    ],
+    chart_labels: ["Aug '25", "Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26"],
+    inbound: [22, 28, 35, 31, 44, 61, 42],
+    outbound: [15, 12, 18, 14, 10, 8, 11],
+    insights: [
+      { label: "Strongest Month", value: "January 2026 (61 inbound) — likely driven by New Year networking surge" },
+      { label: "Outbound Trend", value: "Declining since Oct, suggesting passive network growth dominance" },
+      { label: "Inbound Ratio", value: "68% overall — people find you more than you reach out" },
+      { label: "Growth Velocity", value: "3.2x increase in inbound over 7 months" }
+    ]
+  },
+  quality: {
+    stats: [
+      { value: "1,847", label: "Connections" },
+      { value: "485", label: "Ever Messaged" },
+      { value: "26%", label: "Engaged Rate" }
+    ],
+    donut_labels: ["Active", "Some Contact", "Going Stale", "Dormant", "Deep Sleep", "Never Messaged"],
+    donut_data: [47, 118, 18, 24, 278, 1362],
+    bar_labels: ["Your Network"],
+    bar_datasets: [
+      { label: "Messaged", data: [485], backgroundColor: "#4eadabcc", borderRadius: 6, barPercentage: 0.6 },
+      { label: "Never Messaged", data: [1362], backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 6, barPercentage: 0.6 }
+    ],
+    breakdown: [
+      { tier: "Active", description: "Messaged in last 30 days", count: 47, pct: "2.5%", bar_width: "100%", color: "#FFD700" },
+      { tier: "Some Contact", description: "Messaged in last 90 days", count: 118, pct: "6.4%", bar_width: "80%", color: "#4eadab" },
+      { tier: "Going Stale", description: "Last message 90-180 days ago", count: 18, pct: "1.0%", bar_width: "12%", color: "#A855F7" },
+      { tier: "Dormant", description: "Last message 6-12 months ago", count: 24, pct: "1.3%", bar_width: "16%", color: "#FF5F1F" },
+      { tier: "Deep Sleep", description: "Last message over 1 year ago", count: 278, pct: "15.1%", bar_width: "65%", color: "#4a9f9d" },
+      { tier: "Never Messaged", description: "Connected but never exchanged messages", count: 1362, pct: "73.7%", bar_width: "100%", color: "rgba(255,255,255,0.15)" }
+    ],
+    takeaways: [
+      "<strong>73.7% of your network has never exchanged a single message with you.</strong> These are purely social connections with no active relationship.",
+      "<strong>Only 2.5% are actively engaged</strong> (messaged in the last 30 days). Your real working network is roughly 47 people.",
+      "<strong>278 connections are in Deep Sleep</strong> — you messaged them once but haven't spoken in over a year. Consider a re-engagement campaign for high-value dormant contacts."
+    ]
+  },
+  timeline: {
+    rows: [
+      { name: "Jordan Ellis", company: "Crescendo Labs", direction: "inbound", date: "Feb 8", msg_count: 4 },
+      { name: "Priya Sharma", company: "Metric AI", direction: "inbound", date: "Feb 6", msg_count: 2 },
+      { name: "Leo Park", company: "Vantage Point", direction: "outbound", date: "Feb 5", msg_count: 0 },
+      { name: "Aisha Johnson", company: "Bloom & Co", direction: "inbound", date: "Feb 4", msg_count: 7 },
+      { name: "Marcus Chen", company: "Trellis Ventures", direction: "inbound", date: "Feb 3", msg_count: 3 },
+      { name: "Emily Torres", company: "Cascade Health", direction: "outbound", date: "Feb 2", msg_count: 0 },
+      { name: "Sam Rivera", company: "Atlas Digital", direction: "inbound", date: "Feb 1", msg_count: 1 },
+      { name: "Nina Patel", company: "Ogilvy", direction: "inbound", date: "Jan 30", msg_count: 12 },
+      { name: "Tyler Brooks", company: "Meridian SaaS", direction: "outbound", date: "Jan 28", msg_count: 0 },
+      { name: "Maya Chen", company: "Verdant Labs", direction: "inbound", date: "Jan 27", msg_count: 5 },
+      { name: "Kai Morrison", company: "NorthStar VC", direction: "inbound", date: "Jan 25", msg_count: 3 },
+      { name: "Rosa Martinez", company: "Solara", direction: "inbound", date: "Jan 24", msg_count: 0 },
+      { name: "Devon Park", company: "Keystone AI", direction: "outbound", date: "Jan 22", msg_count: 2 },
+      { name: "Alex Kim", company: "Freelance", direction: "inbound", date: "Jan 20", msg_count: 9 },
+      { name: "Sarah Chen", company: "Compass Digital", direction: "inbound", date: "Jan 18", msg_count: 0 },
+      { name: "Chris Walker", company: "Relay Commerce", direction: "outbound", date: "Jan 15", msg_count: 1 },
+      { name: "Mia Nguyen", company: "Tableau", direction: "inbound", date: "Jan 12", msg_count: 0 },
+      { name: "James Liu", company: "Figma", direction: "inbound", date: "Jan 10", msg_count: 4 },
+      { name: "Taylor Young", company: "Greenhouse", direction: "inbound", date: "Jan 8", msg_count: 0 },
+      { name: "Olivia Grant", company: "Notion", direction: "inbound", date: "Jan 5", msg_count: 2 }
+    ]
+  },
+  inbox: {
+    stats: [
+      { value: "4,210", label: "Total Messages" },
+      { value: "91.8%", label: "Genuine Rate" },
+      { value: "344", label: "Noise Messages" },
+      { value: "3.1x", label: "Volume Increase" }
+    ],
+    chart_labels: ["H1 '20", "H2 '20", "H1 '21", "H2 '21", "H1 '22", "H2 '22", "H1 '23", "H2 '23", "H1 '24", "H2 '24", "H1 '25", "H2 '25", "H1 '26"],
+    genuine: [85, 110, 145, 168, 210, 235, 280, 310, 345, 390, 420, 485, 180],
+    noise: [8, 12, 15, 18, 22, 25, 28, 30, 32, 35, 38, 42, 18],
+    insights: [
+      { label: "Genuine Rate Trend", value: "Stable at 91-93% across all periods" },
+      { label: "Peak Volume", value: "H2 2025 — 527 total messages (485 genuine)" },
+      { label: "Noise Sources", value: "Primarily InMail and automated recruiter outreach" },
+      { label: "Response Pattern", value: "You respond to 78% of genuine messages within 48 hours" }
+    ]
+  },
+  strata: {
+    stats: [
+      { value: "7", label: "Career Phases" },
+      { value: "12 yrs", label: "Network Span" },
+      { value: "2024-25", label: "Peak Era" }
+    ],
+    layers: [
+      { era: "Fractional CMO Era (2025-2026)", desc: "Independent consulting and advisory work", detail: "Top companies: Crescendo Labs, Metric AI, Trellis Ventures. Heavy founder and executive connections.", count: 347, pct: "18.8%" },
+      { era: "Scale-Up Phase (2023-2024)", desc: "VP Marketing at a high-growth DTC brand", detail: "Top companies: Bloom & Co, Relay Commerce, Cascade. Network shifted toward DTC operators and growth marketers.", count: 486, pct: "26.3%" },
+      { era: "Agency Years (2021-2022)", desc: "Senior strategist at digital agency", detail: "Top companies: Ogilvy, Atlas Digital, Compass. Broad cross-industry connections from client work.", count: 382, pct: "20.7%" },
+      { era: "First Marketing Role (2019-2020)", desc: "Marketing manager at SaaS startup", detail: "Top companies: Meridian SaaS, Keystone AI. Early martech and SaaS-heavy network.", count: 274, pct: "14.8%" },
+      { era: "Career Pivot (2017-2018)", desc: "Transitioning from operations to marketing", detail: "Mix of ops and marketing connections. Conferences and online courses drove networking.", count: 168, pct: "9.1%" },
+      { era: "Operations Phase (2015-2016)", desc: "Operations coordinator at retail company", detail: "Supply chain, retail ops, and local business connections.", count: 118, pct: "6.4%" },
+      { era: "Bedrock (2013-2014)", desc: "College and early career", detail: "University peers, internship contacts, and early professional connections.", count: 72, pct: "3.9%" }
+    ]
+  }
+};
+</script>
+
+<!-- RENDERING -->
+<script>
+Chart.defaults.color = '#8b949e';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.plugins.tooltip.backgroundColor = '#1E2329';
+Chart.defaults.plugins.tooltip.titleColor = '#fdfdfe';
+Chart.defaults.plugins.tooltip.bodyColor = '#8b949e';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.padding = 12;
+
+const VIZ = {
+  teal: '#4eadab', lime: '#39FF14', cyan: '#6bc0be', purple: '#A855F7',
+  orange: '#FF5F1F', gold: '#FFD700', muted: '#8b949e', deep: '#4a9f9d',
+  slate: '#7d8590', pink: '#FF2D55'
+};
+const PALETTE = [VIZ.teal, VIZ.lime, VIZ.cyan, VIZ.purple, VIZ.orange, VIZ.gold, VIZ.muted, VIZ.deep, VIZ.slate, VIZ.pink, '#5ab8b6', '#7dcbc9', '#8ed6d4', '#9fe1df', '#b0ecea', '#c1f7f5', '#fdfdfe'];
+
+function renderStats(id, stats) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+}
+
+function renderInsights(id, insights) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = insights.map(i => `<div class="insight"><div class="insight-label">${i.label}</div><div class="insight-value">${i.value}</div></div>`).join('');
+}
+
+/* NAV SCROLL-SPY */
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-100px 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+/* HERO */
+if (DATA.hero) renderStats('hero-stats', DATA.hero.stats);
+
+/* 01: NETWORK UNIVERSE */
+if (DATA.network) {
+  const nd = DATA.network;
+  renderStats('network-stats', nd.stats || []);
+  const gc = document.getElementById('graph');
+  const gw = gc.clientWidth, gh = 600;
+  const gsvg = d3.select('#graph').append('svg').attr('viewBox', `0 0 ${gw} ${gh}`).attr('preserveAspectRatio', 'xMidYMid meet');
+  const gScale = d3.scaleSqrt().domain([0, d3.max(nd.nodes, d => d.size)]).range([12, 60]);
+  const gSim = d3.forceSimulation(nd.nodes)
+    .force('link', d3.forceLink(nd.links).id(d => d.id).distance(d => 150 - d.strength * 3))
+    .force('charge', d3.forceManyBody().strength(-450))
+    .force('center', d3.forceCenter(gw / 2, gh / 2))
+    .force('collision', d3.forceCollide().radius(d => gScale(d.size) + 12));
+  const gLink = gsvg.append('g').selectAll('line').data(nd.links).join('line')
+    .attr('class', 'graph-link').attr('stroke-width', d => Math.max(1, d.strength * 0.5));
+  const gNode = gsvg.append('g').selectAll('g').data(nd.nodes).join('g')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) gSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e, d) => { if (!e.active) gSim.alphaTarget(0); d.fx = null; d.fy = null; })
+    );
+  gNode.append('circle').attr('r', d => gScale(d.size)).attr('fill', d => PALETTE[d.group % PALETTE.length]).attr('fill-opacity', 0.8).attr('stroke', d => PALETTE[d.group % PALETTE.length]).attr('stroke-width', 2).attr('stroke-opacity', 0.9);
+  gNode.append('text').attr('class', 'node-label').attr('text-anchor', 'middle').attr('dy', '-0.3em').text(d => d.id);
+  gNode.append('text').attr('class', 'node-count').attr('text-anchor', 'middle').attr('dy', '1em').text(d => d.size);
+  const gTip = document.getElementById('tooltip');
+  gNode.on('mouseover', (e, d) => {
+    gTip.innerHTML = `<strong>${d.id}</strong><br>${d.size} connections<div class="companies">Top: ${d.top_companies.join(', ')}</div>`;
+    gTip.style.opacity = 1; gTip.style.left = (e.offsetX + 15) + 'px'; gTip.style.top = (e.offsetY - 10) + 'px';
+  }).on('mouseout', () => { gTip.style.opacity = 0; });
+  gSim.on('tick', () => {
+    gLink.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    gNode.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+  const gLeg = document.getElementById('legend');
+  [...nd.nodes].sort((a, b) => b.size - a.size).forEach(n => {
+    gLeg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[n.group % PALETTE.length]}"></div>${n.id} (${n.size})</div>`;
+  });
+}
+
+/* 02: INFERENCES */
+if (DATA.inferences) {
+  const inf = DATA.inferences;
+  renderStats('inference-stats', inf.stats || []);
+  const ig = document.getElementById('inference-grid');
+  if (ig && inf.cards) {
+    ig.innerHTML = inf.cards.map((c, i) => {
+      const span = i === inf.cards.length - 1 && inf.cards.length % 2 === 1 ? ' style="grid-column:span 2;"' : '';
+      return `<div class="inference-card"${span}><div class="card-header"><span class="verdict ${c.verdict}">${c.verdict}</span><span class="card-label">${c.label}</span></div><div class="linkedin-says">${c.linkedin_says}</div><div class="reality"><strong>Reality:</strong> ${c.reality}</div></div>`;
+    }).join('');
+  }
+  const ft = document.getElementById('follows-title');
+  if (ft && inf.follows_count) ft.textContent = `What You Actually Follow (${inf.follows_count} Companies)`;
+  const fg = document.getElementById('follows-grid');
+  if (fg && inf.follows) {
+    fg.innerHTML = inf.follows.map((f, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      return `<div class="follows-cat" style="border-left:3px solid ${color};"><div class="follows-cat-count" style="color:${color};">${f.count}</div><div class="follows-cat-label">${f.label}</div></div>`;
+    }).join('');
+  }
+  const it = document.getElementById('interest-tags');
+  if (it && inf.interest_tags) it.innerHTML = inf.interest_tags.map(t => `<span class="tag ${t.type}">${t.name}</span>`).join('');
+  const vr = document.getElementById('verdict-rows');
+  if (vr && inf.verdicts) {
+    vr.innerHTML = inf.verdicts.map(v => `<div class="comparison-row"><div class="col-linkedin"><div class="col-label">${v.linkedin_label}</div><div class="col-value">${v.linkedin_value}</div></div><div class="vs-divider">vs</div><div class="col-reality"><div class="col-label">Reality</div><div class="col-value">${v.reality_value}</div></div></div>`).join('');
+  }
+}
+
+/* 03: MESSAGES */
+if (DATA.messages) {
+  const msg = DATA.messages;
+  renderStats('msg-stats', msg.stats || []);
+  const mc = document.getElementById('msg-cards');
+  if (mc && msg.cards) {
+    mc.innerHTML = msg.cards.map(m => {
+      const tags = (m.tags || []).map(t => `<span class="msg-tag ${t.type}">${t.label}</span>`).join('');
+      const subject = m.subject ? `<div class="msg-subject">${m.subject}</div>` : '';
+      return `<div class="msg-card" data-type="${m.type}"><div class="urgency ${m.urgency}"></div><div class="msg-body"><div class="msg-header"><span class="msg-from">${m.from}</span><div class="msg-meta"><span class="msg-date">${m.date}</span><span class="msg-days ${m.age_class}">${m.age}</span></div></div>${subject}<div class="msg-content">${m.content}</div><div class="msg-tags">${tags}</div></div></div>`;
+    }).join('');
+  }
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.msg-card').forEach(c => { c.classList.toggle('hidden', f !== 'all' && c.dataset.type !== f); });
+    });
+  });
+}
+
+/* 04: COMPANY CLUSTERS */
+if (DATA.company_clusters) {
+  const cc = DATA.company_clusters;
+  new Chart(document.getElementById('clusterChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: cc.chart_labels, datasets: [{ data: cc.chart_data, backgroundColor: cc.chart_labels.map((_, i) => PALETTE[i % PALETTE.length] + 'cc'), borderColor: cc.chart_labels.map((_, i) => PALETTE[i % PALETTE.length]), borderWidth: 1, borderRadius: 6, barPercentage: 0.7 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 }, color: '#7d8590' } }, y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true } } }
+  });
+  const cg = document.getElementById('cluster-grid');
+  if (cg && cc.clusters) {
+    cg.innerHTML = cc.clusters.map((cl, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      return `<div class="cluster-card" style="border-left:3px solid ${color};"><div class="cluster-header"><span class="cluster-name" style="color:${color};">${cl.name}</span><span class="cluster-count" style="color:${color};">${cl.count}</span></div><div class="cluster-items">${cl.companies.map(c => `<span>${c}</span>`).join('')}</div></div>`;
+    }).join('');
+  }
+}
+
+/* 05: INVITATIONS */
+if (DATA.invitations) {
+  const inv = DATA.invitations;
+  renderStats('inv-stats', inv.stats || []);
+  renderInsights('inv-insights', inv.insights || []);
+  new Chart(document.getElementById('invChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: inv.chart_labels, datasets: [
+      { label: 'Inbound', data: inv.inbound, backgroundColor: VIZ.teal + 'cc', borderRadius: 6, barPercentage: 0.8, categoryPercentage: 0.7 },
+      { label: 'Outbound', data: inv.outbound, backgroundColor: VIZ.slate + 'aa', borderRadius: 6, barPercentage: 0.8, categoryPercentage: 0.7 }
+    ] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', align: 'end', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, padding: 14 } } }, scales: { x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' } }, y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true } } }
+  });
+}
+
+/* 06: QUALITY */
+if (DATA.quality) {
+  const q = DATA.quality;
+  renderStats('quality-stats', q.stats || []);
+  new Chart(document.getElementById('donutChart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: q.donut_labels, datasets: [{ data: q.donut_data, backgroundColor: [VIZ.gold + 'cc', VIZ.teal + 'cc', VIZ.purple + 'cc', VIZ.orange + 'aa', VIZ.deep + '99', 'rgba(255,255,255,0.08)'], borderWidth: 2, borderColor: '#161B22' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 10 }, color: '#8b949e', boxWidth: 10, padding: 8 } } } }
+  });
+  if (q.bar_datasets) {
+    new Chart(document.getElementById('barChart').getContext('2d'), {
+      type: 'bar', data: { labels: q.bar_labels, datasets: q.bar_datasets },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { stacked: true, grid: { color: 'rgba(255,255,255,0.08)' } }, y: { stacked: true, grid: { display: false } } }, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 10 }, color: '#8b949e', boxWidth: 10, padding: 8 } } } }
+    });
+  }
+  const qb = document.getElementById('quality-breakdown');
+  if (qb && q.breakdown) {
+    qb.innerHTML = q.breakdown.map(b => `<div class="breakdown-row"><div class="breakdown-dot" style="background:${b.color};"></div><div class="breakdown-label"><strong>${b.tier}</strong> — ${b.description}</div><div class="breakdown-count">${b.count}</div><div class="breakdown-pct">${b.pct}</div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${b.bar_width};background:${b.color};"></div></div></div>`).join('');
+  }
+  const qt = document.getElementById('quality-takeaways');
+  if (qt && q.takeaways) qt.innerHTML = q.takeaways.map(t => `<div class="takeaway">${t}</div>`).join('');
+}
+
+/* 07: TIMELINE */
+if (DATA.timeline) {
+  const tr = document.getElementById('timeline-rows');
+  if (tr && DATA.timeline.rows) {
+    tr.innerHTML = DATA.timeline.rows.map(r => {
+      const bar = r.msg_count > 0 ? `<div class="msg-bar" style="width:${Math.min(70, r.msg_count * 4)}px;${r.msg_count > 8 ? 'background:' + VIZ.gold + ';' : ''}"></div>` : '';
+      return `<div class="tl-row"><div class="direction-dot ${r.direction}"></div><div class="tl-name">${r.name}</div><div class="tl-company">${r.company}</div><div class="tl-date">${r.date}</div><div class="tl-msgs">${bar}<div class="msg-count">${r.msg_count}</div></div></div>`;
+    }).join('');
+  }
+}
+
+/* 08: INBOX */
+if (DATA.inbox) {
+  const iq = DATA.inbox;
+  renderStats('inbox-stats', iq.stats || []);
+  renderInsights('inbox-insights', iq.insights || []);
+  new Chart(document.getElementById('inboxChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: iq.chart_labels, datasets: [
+      { label: 'Genuine', data: iq.genuine, backgroundColor: VIZ.teal + 'cc', borderRadius: 4, barPercentage: 0.85 },
+      { label: 'Noise', data: iq.noise, backgroundColor: VIZ.pink + 'aa', borderRadius: 4, barPercentage: 0.85 }
+    ] },
+    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } }, y: { stacked: true, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true } }, plugins: { legend: { position: 'top', align: 'end', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, padding: 14 } }, tooltip: { callbacks: { afterBody: function(ctx) { const i = ctx[0].dataIndex; const t = iq.genuine[i] + iq.noise[i]; return t > 0 ? `Genuine: ${((iq.genuine[i] / t) * 100).toFixed(1)}%` : ''; } } } } }
+  });
+}
+
+/* 09: STRATA */
+if (DATA.strata) {
+  const st = DATA.strata;
+  renderStats('strata-stats', st.stats || []);
+  const sc = document.getElementById('strata-container');
+  if (sc && st.layers) {
+    sc.innerHTML = st.layers.map((l, i) => {
+      const layerIdx = st.layers.length - 1 - i;
+      return `<div class="strata-layer layer-${Math.min(layerIdx, 8)}"><div><div class="strata-era">${l.era}</div><div class="strata-desc">${l.desc}</div><div class="strata-detail">${l.detail}</div></div><div class="strata-right"><div class="strata-count">${l.count}</div><div class="strata-pct">${l.pct}</div></div></div>`;
+    }).join('');
+  }
+}
+</script>
+</body>
+</html>

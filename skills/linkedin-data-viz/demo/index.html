@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Data Viz — Claude Code Skill</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0D1117;
+  --bg-surface: #161B22;
+  --bg-elevated: #1E2329;
+  --bg-glass: rgba(255,255,255,0.04);
+  --text-primary: #fdfdfe;
+  --text-secondary: #8b949e;
+  --text-muted: #7d8590;
+  --accent-primary: #4eadab;
+  --accent-hover: #6bc0be;
+  --border-subtle: rgba(255,255,255,0.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+/* Hero */
+.hero {
+  padding: 100px 24px 80px;
+  text-align: center;
+}
+.hero h1 {
+  font-size: 3.2rem;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+.hero h1 span { color: var(--accent-primary); }
+.hero .lead {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 580px;
+  margin: 0 auto 40px;
+}
+.cta-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(78,173,171,0.3);
+}
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+.btn-secondary:hover {
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+/* Preview Grid */
+.preview-section { padding: 60px 24px; }
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+.section-heading {
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 40px;
+  letter-spacing: -0.03em;
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 768px) { .preview-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .preview-grid { grid-template-columns: 1fr; } }
+.preview-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.preview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.12);
+}
+.preview-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--accent-primary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.preview-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.preview-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.preview-type {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+}
+.preview-type.d3 { color: #39FF14; background: rgba(57,255,20,0.08); }
+.preview-type.chartjs { color: #4eadab; background: rgba(78,173,171,0.08); }
+.preview-type.css { color: #A855F7; background: rgba(168,85,247,0.08); }
+
+/* How It Works */
+.steps-section { padding: 80px 24px; }
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+@media (max-width: 768px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
+.step {
+  text-align: center;
+  padding: 24px 16px;
+}
+.step-num {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1.2rem;
+  background: rgba(78,173,171,0.1);
+  color: var(--accent-primary);
+  border: 1px solid rgba(78,173,171,0.2);
+}
+.step-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.step-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Install */
+.install-section {
+  padding: 60px 24px;
+  text-align: center;
+}
+.code-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+  text-align: left;
+  max-width: 640px;
+  margin: 0 auto;
+  overflow-x: auto;
+  line-height: 1.8;
+}
+.code-block .comment { color: var(--text-muted); }
+.code-block .cmd { color: var(--text-primary); }
+
+/* Features */
+.features-section { padding: 60px 24px; }
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (max-width: 600px) { .features-grid { grid-template-columns: 1fr; } }
+.feature-card {
+  backdrop-filter: blur(12px);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+}
+.feature-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.feature-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 48px 24px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+}
+.footer a { color: var(--accent-primary); text-decoration: none; }
+.footer a:hover { color: var(--accent-hover); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <h1>Visualize Your <span>LinkedIn</span> Data</h1>
+  <p class="lead">A Claude Code skill that turns your LinkedIn data export into 9 interactive visualizations. Network graphs, message analysis, career timelines, and more.</p>
+  <div class="cta-row">
+    <a href="demo.html" class="btn btn-primary">View Live Demo</a>
+    <a href="#install" class="btn btn-secondary">Install Skill</a>
+  </div>
+</header>
+
+<!-- 9 VISUALIZATIONS -->
+<section class="preview-section">
+  <div class="container">
+    <div class="section-label">9 Visualizations</div>
+    <h2 class="section-heading">Everything in your LinkedIn export, visualized</h2>
+    <div class="preview-grid">
+      <div class="preview-card">
+        <div class="preview-num">01</div>
+        <div class="preview-title">Network Universe</div>
+        <div class="preview-desc">Force-directed graph of connections clustered by role. Drag nodes to explore.</div>
+        <span class="preview-type d3">D3.js</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">02</div>
+        <div class="preview-title">Inferences vs Reality</div>
+        <div class="preview-desc">What LinkedIn thinks it knows vs what your data actually reveals.</div>
+        <span class="preview-type css">CSS</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">03</div>
+        <div class="preview-title">High-Value Messages</div>
+        <div class="preview-desc">Unanswered messages ranked by potential value with filters.</div>
+        <span class="preview-type css">CSS + JS</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">04</div>
+        <div class="preview-title">Company Follows</div>
+        <div class="preview-desc">Followed companies grouped by industry with bar chart.</div>
+        <span class="preview-type chartjs">Chart.js</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">05</div>
+        <div class="preview-title">Inbound vs Outbound</div>
+        <div class="preview-desc">Connection request patterns over time — who's finding whom.</div>
+        <span class="preview-type chartjs">Chart.js</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">06</div>
+        <div class="preview-title">Connection Quality</div>
+        <div class="preview-desc">Relationship depth: active, dormant, never messaged breakdowns.</div>
+        <span class="preview-type chartjs">Chart.js</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">07</div>
+        <div class="preview-title">Connection Timeline</div>
+        <div class="preview-desc">Recent connections with direction, company, and message engagement.</div>
+        <span class="preview-type css">CSS</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">08</div>
+        <div class="preview-title">Inbox Quality</div>
+        <div class="preview-desc">Genuine vs noise messages over time with quality rate tracking.</div>
+        <span class="preview-type chartjs">Chart.js</span>
+      </div>
+      <div class="preview-card">
+        <div class="preview-num">09</div>
+        <div class="preview-title">Career Strata</div>
+        <div class="preview-desc">Your network as geological layers — one stratum per career phase.</div>
+        <span class="preview-type css">CSS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="steps-section">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-heading">Four steps to your LinkedIn story</h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Export</div>
+        <div class="step-desc">Request your data archive from LinkedIn Settings. Takes ~24 hours.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Install</div>
+        <div class="step-desc">Copy the skill to your Claude Code skills directory.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Run</div>
+        <div class="step-desc">Tell Claude "analyze my LinkedIn data" and follow the wizard.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Share</div>
+        <div class="step-desc">Optionally sanitize your data and publish a demo version.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section class="install-section" id="install">
+  <div class="container">
+    <div class="section-label">Installation</div>
+    <h2 class="section-heading">Get started in 30 seconds</h2>
+    <div class="code-block">
+      <span class="comment"># Clone the repo</span><br>
+      <span class="cmd">git clone https://github.com/thatrebeccarae/claude-code-skills.git</span><br><br>
+      <span class="comment"># Copy skill to your Claude Code skills directory</span><br>
+      <span class="cmd">cp -r claude-code-skills/skills/linkedin-data-viz ~/.claude/skills/</span><br><br>
+      <span class="comment"># Then in Claude Code, just say:</span><br>
+      <span class="cmd">"Analyze my LinkedIn data export"</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <h2 class="section-heading">Built for privacy and polish</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-title">9 Interactive Visualizations</div>
+        <div class="feature-desc">D3.js force graphs, Chart.js charts, and CSS layouts. Drag nodes, filter messages, hover for details.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title">Dark Theme</div>
+        <div class="feature-desc">Carrier Dark design system — glass panels, teal/lime accents, JetBrains Mono for data.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title">Privacy-Safe Publishing</div>
+        <div class="feature-desc">Built-in sanitizer replaces real names and companies with plausible fakes while preserving all patterns.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title">Guided Wizard</div>
+        <div class="feature-desc">Step-by-step onboarding — from CSV location to generated HTML. No coding required.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>Built by <a href="https://github.com/thatrebeccarae" target="_blank">Rebecca Rae Barton</a></p>
+  <p style="margin-top:6px;">Inspired by <a href="https://loganhc-09.github.io/LinkedIn-Data-Export-Visualization/" target="_blank">loganhc-09's LinkedIn Data Export Visualization</a></p>
+  <p style="margin-top:12px;"><a href="https://github.com/thatrebeccarae/claude-code-skills" target="_blank">GitHub</a></p>
+</footer>
+
+</body>
+</html>

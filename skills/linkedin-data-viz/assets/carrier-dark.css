@@ -1,0 +1,1101 @@
+/* ============================================================
+   LinkedIn Data Viz — Carrier Dark Theme
+   Ported from Carrier Design System (carrier/app/static/css/custom.css)
+   Dark-mode-first, VC-backed SaaS aesthetic
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   1. CSS Custom Properties (Design Tokens)
+   ---------------------------------------------------------- */
+:root {
+  /* Backgrounds */
+  --bg-primary:     #0D1117;
+  --bg-surface:     #161B22;
+  --bg-elevated:    #1E2329;
+  --bg-glass:       rgba(255, 255, 255, 0.04);
+
+  /* Text */
+  --text-primary:   #fdfdfe;
+  --text-secondary: #8b949e;
+  --text-muted:     #7d8590;
+
+  /* Accents */
+  --accent-primary:  #4eadab;
+  --accent-hover:    #6bc0be;
+
+  /* Visualization Palette */
+  --viz-teal:    #4eadab;
+  --viz-lime:    #39FF14;
+  --viz-cyan:    #6bc0be;
+  --viz-purple:  #A855F7;
+  --viz-orange:  #FF5F1F;
+  --viz-gold:    #FFD700;
+  --viz-muted:   #8b949e;
+  --viz-deep:    #4a9f9d;
+  --viz-slate:   #7d8590;
+  --viz-pink:    #FF2D55;
+
+  /* Borders */
+  --border-subtle:   rgba(255, 255, 255, 0.08);
+  --border-hover:    rgba(255, 255, 255, 0.12);
+
+  /* Layout */
+  --max-w: 1100px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+}
+
+/* ----------------------------------------------------------
+   2. Base / Reset
+   ---------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ----------------------------------------------------------
+   3. Scrollbar
+   ---------------------------------------------------------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+* { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.12) var(--bg-primary); }
+
+/* ----------------------------------------------------------
+   4. Typography
+   ---------------------------------------------------------- */
+h1, h2, h3 {
+  color: var(--text-primary);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ----------------------------------------------------------
+   5. Layout
+   ---------------------------------------------------------- */
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ----------------------------------------------------------
+   6. Navigation (Sticky + Scroll-Spy)
+   ---------------------------------------------------------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(13, 17, 23, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 40px;
+}
+
+.nav-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 0;
+}
+
+.nav-inner::-webkit-scrollbar { display: none; }
+
+.nav-brand {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-right: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-link {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+
+.nav-link:hover {
+  border-color: var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.nav-link.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+/* ----------------------------------------------------------
+   7. Hero Section
+   ---------------------------------------------------------- */
+.hero {
+  padding: 80px 40px 60px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  letter-spacing: -0.04em;
+  margin-bottom: 12px;
+}
+
+.hero .lead {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto 40px;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.hero-stat-value {
+  font-size: 2.4rem;
+  font-weight: 300;
+  color: var(--accent-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.hero-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ----------------------------------------------------------
+   8. Sections
+   ---------------------------------------------------------- */
+section {
+  padding: 60px 40px;
+}
+
+section:nth-child(even of section) {
+  background: var(--bg-surface);
+}
+
+.section-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.section-num {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.section-title {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  max-width: 700px;
+}
+
+/* ----------------------------------------------------------
+   9. Glass Panel / Card
+   ---------------------------------------------------------- */
+.glass-panel {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 20px;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+}
+
+.card-title {
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.chart-box {
+  height: 420px;
+  position: relative;
+}
+
+/* ----------------------------------------------------------
+   10. Stats Row
+   ---------------------------------------------------------- */
+.stats-row {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.stat { text-align: center; }
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--accent-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ----------------------------------------------------------
+   11. Insights & Takeaways
+   ---------------------------------------------------------- */
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.insight {
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+.insight-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.insight-value {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.takeaway {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  padding-left: 16px;
+  border-left: 3px solid var(--border-subtle);
+}
+
+.takeaway strong {
+  color: var(--text-primary);
+}
+
+/* ----------------------------------------------------------
+   12. D3 Force Graph (Network Universe)
+   ---------------------------------------------------------- */
+#graph-container { position: relative; }
+#graph { width: 100%; height: 600px; }
+#graph svg { width: 100%; height: 100%; }
+
+.node-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  fill: var(--text-primary);
+  pointer-events: none;
+}
+
+.node-count {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  fill: var(--text-muted);
+  pointer-events: none;
+}
+
+.graph-link {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-opacity: 0.6;
+}
+
+.graph-tooltip {
+  position: absolute;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 260px;
+  z-index: 10;
+  color: var(--text-primary);
+}
+
+.graph-tooltip strong { font-weight: 600; }
+.graph-tooltip .companies { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
+
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------
+   13. Inference Cards (Inferences vs Reality)
+   ---------------------------------------------------------- */
+.inference-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) { .inference-grid { grid-template-columns: 1fr; } }
+
+.inference-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: var(--bg-elevated);
+  transition: transform 0.15s;
+}
+
+.inference-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.verdict {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 9px;
+  border-radius: 20px;
+}
+
+.verdict.accurate {
+  background: rgba(78, 173, 171, 0.15);
+  color: var(--accent-primary);
+}
+
+.verdict.partial {
+  background: rgba(255, 215, 0, 0.12);
+  color: var(--viz-gold);
+}
+
+.verdict.wrong {
+  background: rgba(255, 45, 85, 0.12);
+  color: var(--viz-pink);
+}
+
+.card-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.linkedin-says {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.reality {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.reality strong { color: var(--text-primary); }
+
+/* ----------------------------------------------------------
+   14. Tags & Follows
+   ---------------------------------------------------------- */
+.follows-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.follows-cat {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  background: var(--bg-elevated);
+}
+
+.follows-cat-count {
+  font-size: 1.5rem;
+  font-weight: 300;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.follows-cat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+}
+
+.tag.relevant {
+  background: rgba(78, 173, 171, 0.12);
+  border-color: rgba(78, 173, 171, 0.3);
+  color: var(--accent-primary);
+}
+
+.tag.irrelevant {
+  background: rgba(255, 45, 85, 0.08);
+  border-color: rgba(255, 45, 85, 0.15);
+  color: var(--viz-pink);
+}
+
+.tag.neutral {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+/* ----------------------------------------------------------
+   15. Comparison Rows (The Verdict)
+   ---------------------------------------------------------- */
+.comparison-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.comparison-row:last-child { border-bottom: none; }
+.col-linkedin { text-align: right; }
+
+.vs-divider {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.col-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
+}
+
+.col-value { font-size: 0.85rem; }
+.col-linkedin .col-value { color: var(--viz-pink); }
+.col-reality .col-value { color: var(--accent-primary); font-weight: 500; }
+
+/* ----------------------------------------------------------
+   16. Message Cards (High-Value Messages)
+   ---------------------------------------------------------- */
+.filters {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  font-size: 0.78rem;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-muted);
+}
+
+.filter-btn.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.filter-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-secondary);
+}
+
+.msg-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.msg-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.msg-card.hidden { display: none; }
+
+.urgency {
+  width: 4px;
+  border-radius: 2px;
+  min-height: 50px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.urgency.hot { background: var(--viz-gold); }
+.urgency.warm { background: var(--accent-primary); }
+.urgency.cool { background: var(--border-subtle); }
+
+.msg-body { flex: 1; min-width: 0; }
+
+.msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.msg-from {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.msg-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.msg-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.msg-days {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.msg-days.urgent {
+  background: rgba(255, 215, 0, 0.12);
+  color: var(--viz-gold);
+}
+
+.msg-days.moderate {
+  background: rgba(78, 173, 171, 0.12);
+  color: var(--accent-primary);
+}
+
+.msg-days.old {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+}
+
+.msg-subject {
+  font-size: 0.78rem;
+  color: var(--viz-purple);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.msg-content {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.msg-tags {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.msg-tag {
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.msg-tag.opportunity {
+  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(255, 215, 0, 0.15);
+  color: var(--viz-gold);
+}
+
+.msg-tag.relationship {
+  background: rgba(78, 173, 171, 0.08);
+  border-color: rgba(78, 173, 171, 0.15);
+  color: var(--accent-primary);
+}
+
+.msg-tag.network {
+  background: rgba(168, 85, 247, 0.08);
+  border-color: rgba(168, 85, 247, 0.15);
+  color: var(--viz-purple);
+}
+
+/* ----------------------------------------------------------
+   17. Cluster Cards (Company Follows)
+   ---------------------------------------------------------- */
+.cluster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.cluster-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  transition: transform 0.15s;
+}
+
+.cluster-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.cluster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.cluster-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.cluster-count {
+  font-size: 1.3rem;
+  font-weight: 300;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.cluster-items {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.cluster-items span {
+  display: inline-block;
+  padding: 1px 7px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  margin: 2px;
+}
+
+/* ----------------------------------------------------------
+   18. Charts Grid (Connection Quality)
+   ---------------------------------------------------------- */
+.charts-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) { .charts-pair { grid-template-columns: 1fr; } }
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.breakdown-row:last-child { border-bottom: none; }
+
+.breakdown-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.breakdown-label {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.breakdown-label strong {
+  color: var(--text-primary);
+}
+
+.breakdown-count {
+  font-size: 1.1rem;
+  font-weight: 300;
+  min-width: 45px;
+  text-align: right;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.breakdown-pct {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  min-width: 38px;
+  text-align: right;
+}
+
+.breakdown-bar {
+  height: 5px;
+  border-radius: 3px;
+  flex: 0 0 100px;
+  background: var(--bg-elevated);
+  position: relative;
+  overflow: hidden;
+}
+
+.breakdown-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* ----------------------------------------------------------
+   19. Timeline Table (Connection Timeline)
+   ---------------------------------------------------------- */
+.timeline-table {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.tl-header {
+  display: grid;
+  grid-template-columns: 30px 1fr 150px 100px 70px;
+  gap: 10px;
+  padding: 10px 18px;
+  background: var(--bg-elevated);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tl-row {
+  display: grid;
+  grid-template-columns: 30px 1fr 150px 100px 70px;
+  gap: 10px;
+  padding: 10px 18px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.1s;
+}
+
+.tl-row:hover { background: var(--bg-elevated); }
+.tl-row:last-child { border-bottom: none; }
+
+.direction-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.direction-dot.inbound { background: var(--accent-primary); }
+.direction-dot.outbound { background: var(--viz-gold); }
+.direction-dot.unknown { background: var(--text-muted); }
+
+.tl-name {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.tl-company {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-date {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.tl-msgs { text-align: center; }
+
+.msg-bar {
+  display: inline-block;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--accent-primary);
+}
+
+.msg-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .tl-header, .tl-row { grid-template-columns: 26px 1fr 70px; }
+  .tl-company, .tl-date { display: none; }
+}
+
+/* ----------------------------------------------------------
+   20. Career Strata
+   ---------------------------------------------------------- */
+.strata-container {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.strata-layer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s;
+  cursor: default;
+}
+
+.strata-layer:hover { filter: brightness(1.15); }
+.strata-layer:hover .strata-detail { opacity: 1; max-height: 60px; margin-top: 6px; }
+
+.strata-era {
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
+}
+
+.strata-desc {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.strata-detail {
+  font-size: 0.73rem;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s;
+  line-height: 1.5;
+}
+
+.strata-count {
+  font-size: 1.8rem;
+  font-weight: 300;
+  opacity: 0.9;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.strata-pct {
+  font-size: 0.68rem;
+  opacity: 0.5;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.strata-right {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: 20px;
+}
+
+/* Dark geological layers — deep (old) to elevated (new) */
+.layer-0 { background: #0D1117; color: #4eadab; }
+.layer-1 { background: #111820; color: #5ab8b6; }
+.layer-2 { background: #151E28; color: #6bc0be; }
+.layer-3 { background: #1A2530; color: #7dcbc9; }
+.layer-4 { background: #1E2B38; color: #8ed6d4; }
+.layer-5 { background: #233240; color: #9fe1df; }
+.layer-6 { background: #283948; color: #b0ecea; }
+.layer-7 { background: #2D4050; color: #c1f7f5; }
+.layer-8 { background: #324758; color: #fdfdfe; }
+
+/* ----------------------------------------------------------
+   21. Footer
+   ---------------------------------------------------------- */
+.footer {
+  text-align: center;
+  padding: 48px 40px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.footer a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--accent-hover);
+}
+
+/* ----------------------------------------------------------
+   22. Chart.js Dark Theme Defaults (apply via JS)
+   ---------------------------------------------------------- */
+/*
+  Chart.defaults.color = '#8b949e';
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.plugins.tooltip.backgroundColor = '#1E2329';
+  Chart.defaults.plugins.tooltip.titleColor = '#fdfdfe';
+  Chart.defaults.plugins.tooltip.bodyColor = '#8b949e';
+  Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+  Chart.defaults.plugins.tooltip.borderWidth = 1;
+  Chart.defaults.plugins.tooltip.cornerRadius = 8;
+  Chart.defaults.plugins.tooltip.padding = 12;
+  Chart.defaults.scale.grid.color = 'rgba(255,255,255,0.08)';
+*/
+
+/* ----------------------------------------------------------
+   23. Visualization Color Palette Reference
+   ---------------------------------------------------------- */
+/*
+  Primary palette for charts and visualizations:
+  #4eadab  — Teal (primary accent)
+  #39FF14  — Lime (excellent/highlight)
+  #6bc0be  — Light Teal (hover/secondary)
+  #A855F7  — Purple (applied/special)
+  #FF5F1F  — Orange (warning/marginal)
+  #FFD700  — Gold (offer/important)
+  #8b949e  — Muted Gray (neutral)
+  #4a9f9d  — Deep Teal (variant)
+  #7d8590  — Slate (muted variant)
+  #FF2D55  — Pink (error/rejected)
+*/

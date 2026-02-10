@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High-Value Messages — LinkedIn Data Visualization</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+{{THEME_CSS}}
+</style>
+</head>
+<body>
+<div class="container" style="padding:40px;">
+<h1 style="font-size:2.2rem;margin-bottom:8px;">High-Value Messages</h1>
+<p class="section-subtitle" id="subtitle"></p>
+
+<div class="stats-row" id="stats"></div>
+
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All Genuine</button>
+  <button class="filter-btn" data-filter="opportunity">Opportunities</button>
+  <button class="filter-btn" data-filter="relationship">Relationships</button>
+  <button class="filter-btn" data-filter="network">Networking</button>
+</div>
+
+<div class="msg-cards" id="msg-cards"></div>
+</div>
+
+<script>
+const DATA = {{DATA}};
+
+document.getElementById('subtitle').textContent = DATA.subtitle || '';
+const statsEl = document.getElementById('stats');
+if (DATA.stats) statsEl.innerHTML = DATA.stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+const mc = document.getElementById('msg-cards');
+if (DATA.cards) {
+  mc.innerHTML = DATA.cards.map(m => {
+    const tags = (m.tags || []).map(t => `<span class="msg-tag ${t.type}">${t.label}</span>`).join('');
+    const subject = m.subject ? `<div class="msg-subject">${m.subject}</div>` : '';
+    return `<div class="msg-card" data-type="${m.type}"><div class="urgency ${m.urgency}"></div><div class="msg-body"><div class="msg-header"><span class="msg-from">${m.from}</span><div class="msg-meta"><span class="msg-date">${m.date}</span><span class="msg-days ${m.age_class}">${m.age}</span></div></div>${subject}<div class="msg-content">${m.content}</div><div class="msg-tags">${tags}</div></div></div>`;
+  }).join('');
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.msg-card').forEach(c => {
+      c.classList.toggle('hidden', f !== 'all' && c.dataset.type !== f);
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inferences vs Reality — LinkedIn Data Visualization</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+{{THEME_CSS}}
+</style>
+</head>
+<body>
+<div class="container" style="padding:40px;">
+<h1 style="font-size:2.2rem;margin-bottom:8px;">Inferences vs Reality</h1>
+<p class="section-subtitle" id="subtitle"></p>
+
+<div class="stats-row" id="stats"></div>
+
+<div class="card">
+  <div class="card-title">LinkedIn's Inferences</div>
+  <div class="inference-grid" id="inference-grid"></div>
+</div>
+
+<div class="card">
+  <div class="card-title" id="follows-title">What You Actually Follow</div>
+  <div class="follows-grid" id="follows-grid"></div>
+</div>
+
+<div class="card">
+  <div class="card-title">Ad Targeting: What LinkedIn Sells About You</div>
+  <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;">Sample interest categories — <span style="color:var(--accent-primary);">relevant</span> vs <span style="color:var(--viz-pink);">questionable</span>:</p>
+  <div class="tag-cloud" id="interest-tags"></div>
+  <div style="margin-top:16px;">
+    <div class="card-title" style="font-size:0.9rem;">The Verdict</div>
+    <div id="verdict-rows"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const DATA = {{DATA}};
+const PALETTE = ['#4eadab','#39FF14','#6bc0be','#A855F7','#FF5F1F','#FFD700','#8b949e','#4a9f9d','#7d8590','#FF2D55'];
+
+document.getElementById('subtitle').textContent = DATA.subtitle || '';
+const statsEl = document.getElementById('stats');
+if (DATA.stats) statsEl.innerHTML = DATA.stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+const ig = document.getElementById('inference-grid');
+if (DATA.cards) {
+  ig.innerHTML = DATA.cards.map((c, i) => {
+    const span = i === DATA.cards.length - 1 && DATA.cards.length % 2 === 1 ? ' style="grid-column:span 2;"' : '';
+    return `<div class="inference-card"${span}><div class="card-header"><span class="verdict ${c.verdict}">${c.verdict}</span><span class="card-label">${c.label}</span></div><div class="linkedin-says">${c.linkedin_says}</div><div class="reality"><strong>Reality:</strong> ${c.reality}</div></div>`;
+  }).join('');
+}
+
+if (DATA.follows_count) document.getElementById('follows-title').textContent = `What You Actually Follow (${DATA.follows_count} Companies)`;
+const fg = document.getElementById('follows-grid');
+if (DATA.follows) {
+  fg.innerHTML = DATA.follows.map((f, i) => {
+    const c = PALETTE[i % PALETTE.length];
+    return `<div class="follows-cat" style="border-left:3px solid ${c};"><div class="follows-cat-count" style="color:${c};">${f.count}</div><div class="follows-cat-label">${f.label}</div></div>`;
+  }).join('');
+}
+
+const it = document.getElementById('interest-tags');
+if (DATA.interest_tags) it.innerHTML = DATA.interest_tags.map(t => `<span class="tag ${t.type}">${t.name}</span>`).join('');
+
+const vr = document.getElementById('verdict-rows');
+if (DATA.verdicts) {
+  vr.innerHTML = DATA.verdicts.map(v => `<div class="comparison-row"><div class="col-linkedin"><div class="col-label">${v.linkedin_label}</div><div class="col-value">${v.linkedin_value}</div></div><div class="vs-divider">vs</div><div class="col-reality"><div class="col-label">Reality</div><div class="col-value">${v.reality_value}</div></div></div>`).join('');
+}
+</script>
+</body>
+</html>

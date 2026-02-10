@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inbox Quality Analysis — LinkedIn Data Visualization</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+{{THEME_CSS}}
+</style>
+</head>
+<body>
+<div class="container" style="padding:40px;">
+<h1 style="font-size:2.2rem;margin-bottom:8px;">Inbox Quality Analysis</h1>
+<p class="section-subtitle" id="subtitle"></p>
+
+<div class="stats-row" id="stats"></div>
+
+<div class="card"><div class="chart-box" style="height:480px;"><canvas id="inboxChart"></canvas></div></div>
+
+<div class="card"><div class="insight-grid" id="insights"></div></div>
+</div>
+
+<script>
+Chart.defaults.color = '#8b949e';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.plugins.tooltip.backgroundColor = '#1E2329';
+Chart.defaults.plugins.tooltip.titleColor = '#fdfdfe';
+Chart.defaults.plugins.tooltip.bodyColor = '#8b949e';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+const DATA = {{DATA}};
+
+document.getElementById('subtitle').textContent = DATA.subtitle || '';
+const statsEl = document.getElementById('stats');
+if (DATA.stats) statsEl.innerHTML = DATA.stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+const insEl = document.getElementById('insights');
+if (DATA.insights) insEl.innerHTML = DATA.insights.map(i => `<div class="insight"><div class="insight-label">${i.label}</div><div class="insight-value">${i.value}</div></div>`).join('');
+
+new Chart(document.getElementById('inboxChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: DATA.chart_labels,
+    datasets: [
+      { label: 'Genuine', data: DATA.genuine, backgroundColor: '#4eadabcc', borderRadius: 4, barPercentage: 0.85 },
+      { label: 'Noise / Spam', data: DATA.noise, backgroundColor: '#FF2D55aa', borderRadius: 4, barPercentage: 0.85 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 }, color: '#7d8590', maxRotation: 45 } },
+      y: { stacked: true, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+    },
+    plugins: {
+      legend: { position: 'top', align: 'end', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, borderRadius: 3, useBorderRadius: true, padding: 16 } },
+      tooltip: {
+        callbacks: {
+          afterBody: function(ctx) {
+            const i = ctx[0].dataIndex;
+            const t = DATA.genuine[i] + DATA.noise[i];
+            return t > 0 ? `Genuine rate: ${((DATA.genuine[i] / t) * 100).toFixed(1)}%` : '';
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

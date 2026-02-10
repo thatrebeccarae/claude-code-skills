@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Follows Clustering — LinkedIn Data Visualization</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+{{THEME_CSS}}
+</style>
+</head>
+<body>
+<div class="container" style="padding:40px;">
+<h1 style="font-size:2.2rem;margin-bottom:8px;">Company Follows Clustering</h1>
+<p class="section-subtitle" id="subtitle"></p>
+
+<div class="stats-row" id="stats"></div>
+
+<div class="card"><div class="chart-box" style="height:500px;"><canvas id="clusterChart"></canvas></div></div>
+
+<div class="cluster-grid" id="cluster-grid"></div>
+</div>
+
+<script>
+Chart.defaults.color = '#8b949e';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.plugins.tooltip.backgroundColor = '#1E2329';
+Chart.defaults.plugins.tooltip.titleColor = '#fdfdfe';
+Chart.defaults.plugins.tooltip.bodyColor = '#8b949e';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+const DATA = {{DATA}};
+const PALETTE = ['#4eadab','#39FF14','#6bc0be','#A855F7','#FF5F1F','#FFD700','#8b949e','#4a9f9d','#7d8590','#FF2D55'];
+
+document.getElementById('subtitle').textContent = DATA.subtitle || '';
+const statsEl = document.getElementById('stats');
+if (DATA.stats) statsEl.innerHTML = DATA.stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+new Chart(document.getElementById('clusterChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: DATA.chart_labels,
+    datasets: [{
+      data: DATA.chart_data,
+      backgroundColor: DATA.chart_labels.map((_, i) => PALETTE[i % PALETTE.length] + 'cc'),
+      borderColor: DATA.chart_labels.map((_, i) => PALETTE[i % PALETTE.length]),
+      borderWidth: 1, borderRadius: 6, barPercentage: 0.7
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' } },
+      y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+    }
+  }
+});
+
+const cg = document.getElementById('cluster-grid');
+if (DATA.clusters) {
+  cg.innerHTML = DATA.clusters.map((cl, i) => {
+    const c = PALETTE[i % PALETTE.length];
+    const items = cl.companies.map(co => `<span>${co}</span>`).join('');
+    return `<div class="cluster-card" style="border-left:3px solid ${c};"><div class="cluster-header"><span class="cluster-name" style="color:${c};">${cl.name}</span><span class="cluster-count" style="color:${c};">${cl.count}</span></div><div class="cluster-items">${items}</div></div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
