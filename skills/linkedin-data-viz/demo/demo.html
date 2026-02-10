@@ -399,32 +399,64 @@ const DATA = {
     ],
     nodes: [
       { id: "Marketing", size: 412, group: 0, top_companies: ["Ogilvy Group", "HubSpot", "Mailchimp"], children: [
-        { id: "Growth Marketing", size: 118, group: 0 },
-        { id: "Brand & Creative", size: 95, group: 0 },
+        { id: "Growth Marketing", size: 118, group: 0, children: [
+          { id: "PLG Specialists", size: 42, group: 0 },
+          { id: "ABM Strategists", size: 38, group: 0 },
+          { id: "Demand Gen", size: 38, group: 0 }
+        ]},
+        { id: "Brand & Creative", size: 95, group: 0, children: [
+          { id: "Brand Strategists", size: 45, group: 0 },
+          { id: "Creative Directors", size: 30, group: 0 },
+          { id: "Copywriters", size: 20, group: 0 }
+        ]},
         { id: "Email / Lifecycle", size: 87, group: 0 },
         { id: "Content & SEO", size: 64, group: 0 },
         { id: "Performance / Paid", size: 48, group: 0 }
       ]},
       { id: "Tech / Engineering", size: 318, group: 1, top_companies: ["Stripe", "Vercel", "Datadog"], children: [
-        { id: "Full-Stack Dev", size: 102, group: 1 },
-        { id: "Data / ML", size: 78, group: 1 },
+        { id: "Full-Stack Dev", size: 102, group: 1, children: [
+          { id: "Backend", size: 42, group: 1 },
+          { id: "Frontend Web", size: 35, group: 1 },
+          { id: "Mobile", size: 25, group: 1 }
+        ]},
+        { id: "Data / ML", size: 78, group: 1, children: [
+          { id: "Data Engineers", size: 32, group: 1 },
+          { id: "ML Engineers", size: 28, group: 1 },
+          { id: "Analytics", size: 18, group: 1 }
+        ]},
         { id: "DevOps / Infra", size: 65, group: 1 },
         { id: "Frontend", size: 73, group: 1 }
       ]},
       { id: "Founders", size: 247, group: 2, top_companies: ["YC W23", "Sequoia Scout", "First Round"], children: [
-        { id: "VC-Backed", size: 89, group: 2 },
-        { id: "Bootstrapped", size: 72, group: 2 },
+        { id: "VC-Backed", size: 89, group: 2, children: [
+          { id: "Series A-B", size: 38, group: 2 },
+          { id: "Seed Stage", size: 31, group: 2 },
+          { id: "Growth Stage", size: 20, group: 2 }
+        ]},
+        { id: "Bootstrapped", size: 72, group: 2, children: [
+          { id: "SaaS Founders", size: 35, group: 2 },
+          { id: "Agency Owners", size: 22, group: 2 },
+          { id: "Solopreneurs", size: 15, group: 2 }
+        ]},
         { id: "AI / Deep Tech", size: 51, group: 2 },
         { id: "DTC Founders", size: 35, group: 2 }
       ]},
       { id: "Sales", size: 196, group: 3, top_companies: ["Salesforce", "Gong", "Outreach"], children: [
-        { id: "Account Exec", size: 74, group: 3 },
+        { id: "Account Exec", size: 74, group: 3, children: [
+          { id: "Enterprise AE", size: 32, group: 3 },
+          { id: "Mid-Market", size: 26, group: 3 },
+          { id: "SMB Sales", size: 16, group: 3 }
+        ]},
         { id: "Sales Leaders", size: 58, group: 3 },
         { id: "SDR / BDR", size: 38, group: 3 },
         { id: "RevOps", size: 26, group: 3 }
       ]},
       { id: "Product", size: 155, group: 4, top_companies: ["Figma", "Linear", "Notion"], children: [
-        { id: "Product Mgmt", size: 68, group: 4 },
+        { id: "Product Mgmt", size: 68, group: 4, children: [
+          { id: "B2B PM", size: 30, group: 4 },
+          { id: "B2C PM", size: 22, group: 4 },
+          { id: "Platform PM", size: 16, group: 4 }
+        ]},
         { id: "Product Strategy", size: 48, group: 4 },
         { id: "Growth PM", size: 39, group: 4 }
       ]},
@@ -714,29 +746,39 @@ if (DATA.network) {
   const gsvg = d3.select('#graph').append('svg').attr('viewBox', `0 0 ${gw} ${gh}`).attr('preserveAspectRatio', 'xMidYMid meet');
   const gTip = document.getElementById('tooltip');
 
-  /* Build flat node/link arrays from hierarchical data */
-  const parentNodes = nd.nodes.map(n => ({ ...n, _type: 'parent', _expanded: false }));
+  /* Build flat parent nodes + recursive child map */
+  const parentNodes = nd.nodes.map(n => ({ ...n, _depth: 0, _expanded: false }));
   let allNodes = [...parentNodes];
   let allLinks = [...nd.links];
-  const childMap = new Map(); // parentId -> child node array
+  const childMap = new Map();
 
-  nd.nodes.forEach(p => {
-    if (p.children) {
-      const kids = p.children.map(c => ({ ...c, _type: 'child', _parent: p.id, top_companies: [] }));
-      childMap.set(p.id, kids);
-    }
-  });
-
-  /* Scales */
-  const parentScale = d3.scaleSqrt().domain([0, d3.max(parentNodes, d => d.size)]).range([20, 60]);
-  const childScale = d3.scaleSqrt().domain([0, 120]).range([6, 22]);
-
-  function nodeRadius(d) {
-    return d._type === 'parent' ? parentScale(d.size) : childScale(d.size);
+  function buildChildMap(nodes, depth) {
+    nodes.forEach(n => {
+      if (n.children && n.children.length > 0) {
+        const kids = n.children.map(c => ({ ...c, _depth: depth + 1, _parent: n.id, _expanded: false, top_companies: c.top_companies || [] }));
+        childMap.set(n.id, kids);
+        buildChildMap(n.children, depth + 1);
+      }
+    });
   }
-  function nodeColor(d) {
-    const base = PALETTE[d.group % PALETTE.length];
-    return d._type === 'child' ? base + 'aa' : base;
+  buildChildMap(nd.nodes, 0);
+
+  /* Depth-aware scales */
+  const parentMax = d3.max(parentNodes, d => d.size);
+  const depthScales = [
+    d3.scaleSqrt().domain([0, parentMax]).range([22, 60]),
+    d3.scaleSqrt().domain([0, 120]).range([8, 24]),
+    d3.scaleSqrt().domain([0, 50]).range([4, 14])
+  ];
+  function nodeRadius(d) { return depthScales[Math.min(d._depth || 0, 2)](d.size); }
+
+  /* Recursive helper: collect all descendant IDs and reset _expanded */
+  function getDescendantIds(nodeId) {
+    const ids = new Set();
+    const kids = childMap.get(nodeId);
+    if (!kids) return ids;
+    kids.forEach(k => { ids.add(k.id); k._expanded = false; getDescendantIds(k.id).forEach(id => ids.add(id)); });
+    return ids;
   }
 
   /* SVG layers */
@@ -759,7 +801,7 @@ if (DATA.network) {
 
     const nodeEnter = nodeSel.enter().append('g').attr('class', 'node').attr('opacity', 0)
       .call(d3.drag()
-        .on('start', (e, d) => { if (!e.active) gSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('start', (e, d) => { if (!e.active) gSim.alphaTarget(0.08).restart(); d.fx = d.x; d.fy = d.y; })
         .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
         .on('end', (e, d) => { if (!e.active) gSim.alphaTarget(0); d.fx = null; d.fy = null; })
       );
@@ -773,48 +815,52 @@ if (DATA.network) {
 
     nodeMerge.select('circle')
       .attr('r', d => nodeRadius(d))
-      .attr('fill', d => nodeColor(d))
-      .attr('fill-opacity', d => d._type === 'child' ? 0.6 : 0.8)
+      .attr('fill', d => PALETTE[d.group % PALETTE.length])
+      .attr('fill-opacity', d => d._depth === 0 ? 1.0 : d._depth === 1 ? 0.85 : 0.7)
       .attr('stroke', d => PALETTE[d.group % PALETTE.length])
-      .attr('stroke-width', d => d._type === 'child' ? 1 : 2)
+      .attr('stroke-width', d => d._depth === 0 ? 2 : 1)
       .attr('stroke-opacity', 0.9)
-      .style('cursor', d => d._type === 'parent' && childMap.has(d.id) ? 'pointer' : 'default');
+      .style('cursor', d => childMap.has(d.id) ? 'pointer' : 'default');
 
     nodeMerge.select('.node-label')
-      .attr('dy', d => d._type === 'child' ? '0.35em' : '-0.3em')
-      .style('font-size', d => d._type === 'child' ? '9px' : '11px')
-      .text(d => d._type === 'child' && nodeRadius(d) < 14 ? '' : d.id);
+      .attr('dy', d => d._depth >= 1 ? '0.35em' : '-0.3em')
+      .style('font-size', d => d._depth >= 2 ? '7px' : d._depth === 1 ? '9px' : '11px')
+      .text(d => nodeRadius(d) < 12 ? '' : d.id);
 
     nodeMerge.select('.node-count')
       .attr('dy', '1em')
-      .style('font-size', d => d._type === 'child' ? '8px' : '10px')
-      .text(d => d._type === 'child' && nodeRadius(d) < 14 ? '' : d.size);
+      .style('font-size', d => d._depth >= 2 ? '6px' : d._depth === 1 ? '8px' : '10px')
+      .text(d => nodeRadius(d) < 12 ? '' : d.size);
 
     /* Tooltip */
     nodeMerge.on('mouseover', (e, d) => {
-      const info = d._type === 'parent' && d.top_companies
+      const info = d.top_companies && d.top_companies.length
         ? `<div class="companies">Top: ${d.top_companies.join(', ')}</div>`
         : d._parent ? `<div class="companies">Cluster: ${d._parent}</div>` : '';
-      const hint = d._type === 'parent' && childMap.has(d.id) ? `<div style="margin-top:4px;font-size:0.72rem;color:var(--accent-primary);">Click to ${d._expanded ? 'collapse' : 'expand'}</div>` : '';
+      const hint = childMap.has(d.id) ? `<div style="margin-top:4px;font-size:0.72rem;color:var(--accent-primary);">Click to ${d._expanded ? 'collapse' : 'expand'}</div>` : '';
       gTip.innerHTML = `<strong>${d.id}</strong><br>${d.size} connections${info}${hint}`;
       gTip.style.opacity = 1; gTip.style.left = (e.offsetX + 15) + 'px'; gTip.style.top = (e.offsetY - 10) + 'px';
     }).on('mouseout', () => { gTip.style.opacity = 0; });
 
-    /* Click to expand/collapse */
+    /* Click to expand/collapse — works at any depth */
     nodeMerge.on('click', (e, d) => {
-      if (d._type !== 'parent' || !childMap.has(d.id)) return;
+      if (!childMap.has(d.id)) return;
       e.stopPropagation();
       d._expanded = !d._expanded;
       if (d._expanded) {
         const kids = childMap.get(d.id);
-        kids.forEach(k => { k.x = d.x + (Math.random() - 0.5) * 40; k.y = d.y + (Math.random() - 0.5) * 40; });
+        kids.forEach(k => { k.x = d.x + (Math.random() - 0.5) * 30; k.y = d.y + (Math.random() - 0.5) * 30; });
         allNodes = allNodes.concat(kids);
-        kids.forEach(k => { allLinks.push({ source: d.id, target: k.id, strength: 4, _childLink: true, _group: d.group }); });
+        kids.forEach(k => { allLinks.push({ source: d.id, target: k.id, strength: 3, _childLink: true, _group: d.group }); });
       } else {
-        const kids = childMap.get(d.id);
-        const kidIds = new Set(kids.map(k => k.id));
-        allNodes = allNodes.filter(n => !kidIds.has(n.id));
-        allLinks = allLinks.filter(l => !l._childLink || ((l.source.id || l.source) !== d.id && !kidIds.has(l.source.id || l.source)));
+        const descIds = getDescendantIds(d.id);
+        allNodes = allNodes.filter(n => !descIds.has(n.id));
+        allLinks = allLinks.filter(l => {
+          if (!l._childLink) return true;
+          const sid = l.source.id || l.source;
+          const tid = l.target.id || l.target;
+          return !descIds.has(tid) && !descIds.has(sid);
+        });
       }
       restart();
     });
@@ -822,15 +868,17 @@ if (DATA.network) {
     /* Simulation */
     if (gSim) gSim.stop();
     gSim = d3.forceSimulation(allNodes)
-      .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => d._childLink ? 40 + nodeRadius(d.target) : 150 - (d.strength || 4) * 3))
-      .force('charge', d3.forceManyBody().strength(d => d._type === 'child' ? -80 : -450))
-      .force('center', d3.forceCenter(gw / 2, gh / 2))
-      .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + (d._type === 'child' ? 4 : 12)))
+      .velocityDecay(0.55)
+      .alphaDecay(0.05)
+      .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => d._childLink ? 25 + nodeRadius(d.source) + nodeRadius(d.target) : 160 - (d.strength || 4) * 3))
+      .force('charge', d3.forceManyBody().strength(d => d._depth >= 2 ? -25 : d._depth >= 1 ? -60 : -300))
+      .force('center', d3.forceCenter(gw / 2, gh / 2).strength(0.04))
+      .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + (d._depth === 0 ? 10 : 3)).strength(0.8))
       .on('tick', () => {
         linkMerge.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
         nodeMerge.attr('transform', d => `translate(${d.x},${d.y})`);
       });
-    gSim.alpha(0.6).restart();
+    gSim.alpha(0.4).restart();
   }
 
   restart();
