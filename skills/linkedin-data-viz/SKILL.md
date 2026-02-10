@@ -1,7 +1,7 @@
 ---
 name: linkedin-data-viz
 description: >
-  Analyze and visualize LinkedIn data exports. Generates 9 interactive
+  Analyze and visualize LinkedIn data exports. Generates 10 interactive
   HTML visualizations from CSV files including network force graphs,
   message analysis, connection quality scoring, and career timelines.
   Use when the user mentions LinkedIn data export, LinkedIn visualization,
@@ -10,7 +10,7 @@ description: >
 
 # LinkedIn Data Viz Skill
 
-This skill transforms a LinkedIn data export into 9 interactive HTML visualizations with a unified dashboard. It walks the user through a wizard flow: locating their export, previewing analysis, selecting a theme, and generating output. All data stays local on the user's machine.
+This skill transforms a LinkedIn data export into 10 interactive HTML visualizations with a unified dashboard. It walks the user through a wizard flow: locating their export, previewing analysis, selecting a theme, and generating output. All data stays local on the user's machine.
 
 ---
 
@@ -87,7 +87,7 @@ Parse the CSV files and display summary statistics. Then let the user choose whi
 
 **Claude actions:**
 
-1. Run `scripts/parse_csvs.py <input_dir>` to parse all CSV files.
+1. Run `scripts/parse_export.py <input_dir>` to parse all CSV files.
 2. Display summary stats:
    - Total connections and date range (earliest to latest)
    - Message count and unique conversation count
@@ -142,7 +142,7 @@ Parse, analyze, and generate HTML files. Show progress throughout.
 **Claude actions:**
 
 1. Run `scripts/analyze.py <input_dir> --output <output_dir>` to perform all analysis and produce `analysis.json`.
-2. Run `scripts/generate.py <output_dir> --theme <theme_css_path> --vizzes <comma_separated_list>` to inject data and theme into HTML templates.
+2. Run `scripts/generate_viz.py --templates templates/ --data <output_dir>/analysis.json --output <output_dir> --theme <theme_css_path>` to inject data and theme into HTML templates.
 3. Show progress for each step:
 
 ```
@@ -157,8 +157,8 @@ Generated files:
   01-network-universe.html
   02-inferences-vs-reality.html
   03-high-value-messages.html
-  04-company-follows-clustering.html
-  05-inbound-vs-outbound.html
+  04-company-follows.html
+  05-inbound-outbound.html
   06-connection-quality.html
   07-connection-timeline.html
   08-inbox-quality.html
@@ -223,9 +223,10 @@ All scripts live in `scripts/` and are invoked by Claude during the wizard flow.
 
 | Script | Purpose | Input | Output |
 |--------|---------|-------|--------|
-| `parse_csvs.py` | Parse and validate all CSV files | CSV directory path | Parsed data structures (stdout summary) |
+| `parse_export.py` | Parse and validate all CSV files | CSV directory path | Parsed data structures (stdout summary) |
 | `analyze.py` | Run all analysis algorithms | CSV directory, output directory | `analysis.json` in output dir |
-| `generate.py` | Inject data + theme into HTML templates | Output dir, theme CSS path, viz list | HTML files in output dir |
+| `generate_viz.py` | Inject data + theme into HTML templates | Templates dir, JSON data, output dir, theme CSS | HTML files in output dir |
+| `sanitize.py` | Strip PII from analysis data for sharing | Analysis JSON | Sanitized JSON with fake names/companies |
 
 Templates live in `templates/` and use `{{DATA}}` and `{{THEME_CSS}}` placeholders.
 

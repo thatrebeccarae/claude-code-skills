@@ -25,20 +25,21 @@ logger = logging.getLogger(__name__)
 # Template definitions
 # ---------------------------------------------------------------------------
 
-# Maps output filename → template filename for the 9 individual viz pages
+# Maps output filename → template filename for the 10 individual viz pages
 INDIVIDUAL_TEMPLATES: dict[str, str] = {
-    "network-clusters.html": "network-clusters.html",
-    "company-categories.html": "company-categories.html",
-    "relationship-tiers.html": "relationship-tiers.html",
-    "invitation-trends.html": "invitation-trends.html",
-    "inbox-classification.html": "inbox-classification.html",
-    "career-strata.html": "career-strata.html",
-    "high-value-messages.html": "high-value-messages.html",
-    "ad-targeting.html": "ad-targeting.html",
-    "summary-stats.html": "summary-stats.html",
+    "01-network-universe.html": "01-network-universe.html",
+    "02-inferences-vs-reality.html": "02-inferences-vs-reality.html",
+    "03-high-value-messages.html": "03-high-value-messages.html",
+    "04-company-follows.html": "04-company-follows.html",
+    "05-inbound-outbound.html": "05-inbound-outbound.html",
+    "06-connection-quality.html": "06-connection-quality.html",
+    "07-connection-timeline.html": "07-connection-timeline.html",
+    "08-inbox-quality.html": "08-inbox-quality.html",
+    "09-posting-correlation.html": "09-posting-correlation.html",
+    "10-career-strata.html": "10-career-strata.html",
 }
 
-DASHBOARD_TEMPLATE: str = "dashboard.html"
+DASHBOARD_TEMPLATE: str = "unified-dashboard.html"
 
 
 # ---------------------------------------------------------------------------
@@ -100,7 +101,7 @@ def generate_individual(
     output_dir: Path,
     theme_css_path: Path | None = None,
 ) -> list[Path]:
-    """Generate all 9 individual HTML visualization files.
+    """Generate all 10 individual HTML visualization files.
 
     Each template receives the full data dict so it can pull the keys
     it needs. Templates are expected at ``template_dir/<template_name>``.

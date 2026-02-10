@@ -471,7 +471,7 @@ Each template expects specific keys in the `DATA` object.
 }
 ```
 
-#### 04-company-follows-clustering.html
+#### 04-company-follows.html
 
 ```json
 {
@@ -493,7 +493,7 @@ Each template expects specific keys in the `DATA` object.
 }
 ```
 
-#### 05-inbound-vs-outbound.html
+#### 05-inbound-outbound.html
 
 ```json
 {
@@ -775,7 +775,7 @@ Chart.defaults.scale.grid.color = 'rgba(255,255,255,0.08)';
 Pass your custom theme to the generation step:
 
 ```bash
-python scripts/generate.py output/ --theme assets/my-custom-theme.css --vizzes all
+python scripts/generate_viz.py --templates templates/ --data output/analysis.json --output output/ --theme assets/my-custom-theme.css
 ```
 
 ### Light Theme Tips

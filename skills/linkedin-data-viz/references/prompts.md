@@ -1,6 +1,6 @@
 # LinkedIn Data Viz -- Prompt Library
 
-Analysis prompts for each of the 9 visualizations. Use these to customize analysis behavior, extend the skill, or generate narrative insights alongside the visual output.
+Analysis prompts for each of the 10 visualizations. Use these to customize analysis behavior, extend the skill, or generate narrative insights alongside the visual output.
 
 ---
 
