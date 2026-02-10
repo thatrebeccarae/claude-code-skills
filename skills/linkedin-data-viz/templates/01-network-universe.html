@@ -19,7 +19,7 @@
 <div class="stats-row" id="stats"></div>
 
 <div class="card" id="graph-container" style="position:relative;overflow:hidden;">
-  <div id="graph" style="width:100%;height:700px;"></div>
+  <div id="graph" style="width:100%;height:800px;"></div>
   <div class="graph-tooltip" id="tooltip"></div>
   <div class="graph-legend" id="legend"></div>
 </div>
@@ -34,14 +34,14 @@ const statsEl = document.getElementById('stats');
 if (DATA.stats) statsEl.innerHTML = DATA.stats.map(s => `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
 
 const gc = document.getElementById('graph');
-const w = gc.clientWidth, h = 700;
+const w = gc.clientWidth, h = 800;
 const svg = d3.select('#graph').append('svg').attr('viewBox', `0 0 ${w} ${h}`).attr('preserveAspectRatio', 'xMidYMid meet');
 const tip = document.getElementById('tooltip');
 
-/* Multi-level hierarchy with recursive expand/collapse */
-const parentNodes = DATA.nodes.map(n => ({ ...n, _depth: 0, _expanded: false }));
-let allNodes = [...parentNodes];
-let allLinks = [...DATA.links];
+/* Build parent nodes + recursive child map */
+const parentNodes = DATA.nodes.map(n => ({ ...n, _depth: 0, _expanded: true }));
+let allNodes = [];
+let allLinks = [];
 const childMap = new Map();
 
 function buildChildMap(nodes, depth) {
@@ -55,13 +55,46 @@ function buildChildMap(nodes, depth) {
 }
 buildChildMap(DATA.nodes, 0);
 
-const parentMax = d3.max(parentNodes, d => d.size);
+/* "You" central node */
+const youNode = { id: 'You', size: DATA.totalConnections || 1847, group: -1, _depth: -1, _expanded: true };
+const maxPS = d3.max(parentNodes, d => d.size);
+allNodes.push(youNode);
+allNodes = allNodes.concat(parentNodes);
+
+/* You → parent links */
+parentNodes.forEach(p => { allLinks.push({ source: 'You', target: p.id, strength: p.size, _youLink: true }); });
+allLinks = allLinks.concat(DATA.links);
+
+/* Auto-expand parents on load */
+parentNodes.forEach(p => {
+  if (childMap.has(p.id)) {
+    const kids = childMap.get(p.id);
+    allNodes = allNodes.concat(kids);
+    kids.forEach(k => { allLinks.push({ source: p.id, target: k.id, strength: k.size, _childLink: true, _group: p.group }); });
+  }
+});
+
+/* Radius scales */
+const youR = 50;
 const depthScales = [
-  d3.scaleSqrt().domain([0, parentMax]).range([22, 65]),
-  d3.scaleSqrt().domain([0, 120]).range([8, 24]),
+  d3.scaleSqrt().domain([0, maxPS]).range([28, 65]),
+  d3.scaleSqrt().domain([0, 120]).range([8, 22]),
   d3.scaleSqrt().domain([0, 50]).range([4, 14])
 ];
-function nr(d) { return depthScales[Math.min(d._depth || 0, 2)](d.size); }
+function nr(d) { return d._depth === -1 ? youR : depthScales[Math.min(d._depth, 2)](d.size); }
+
+/* Link weight scales */
+const maxCS = d3.max(DATA.links, d => d.strength) || 22;
+function lw(d) {
+  if (d._youLink) return Math.max(1.5, (d.strength / maxPS) * 8);
+  if (d._childLink) return Math.max(0.5, (d.strength / 120) * 2);
+  return Math.max(1, (d.strength || 4) / maxCS * 4);
+}
+function lo(d) {
+  if (d._youLink) return Math.max(0.2, (d.strength / maxPS) * 0.65);
+  if (d._childLink) return Math.max(0.2, (d.strength / 120) * 0.45);
+  return Math.max(0.2, (d.strength || 4) / maxCS * 0.5);
+}
 
 function getDescendantIds(nodeId) {
   const ids = new Set();
@@ -77,42 +110,47 @@ let sim;
 
 function restart() {
   const lSel = linkLayer.selectAll('line').data(allLinks, d => (d.source.id||d.source)+'-'+(d.target.id||d.target));
-  lSel.exit().transition().duration(300).attr('stroke-opacity',0).remove();
+  lSel.exit().transition().duration(200).attr('stroke-opacity',0).remove();
   const lE = lSel.enter().append('line').attr('class','graph-link').attr('stroke-opacity',0);
   const lM = lE.merge(lSel);
-  lM.transition().duration(300).attr('stroke-width', d => d._childLink?1:Math.max(1,(d.strength||4)*0.5)).attr('stroke-opacity', d => d._childLink?0.35:0.5).attr('stroke', d => d._childLink?PALETTE[d._group%PALETTE.length]+'44':'rgba(255,255,255,0.08)');
+  lM.transition().duration(200).attr('stroke-width',d=>lw(d)).attr('stroke-opacity',d=>lo(d)).attr('stroke',d=>{if(d._youLink)return'rgba(255,255,255,0.4)';if(d._childLink)return PALETTE[d._group%PALETTE.length];return'rgba(255,255,255,0.25)';});
 
   const nSel = nodeLayer.selectAll('g.node').data(allNodes, d => d.id);
-  nSel.exit().transition().duration(300).attr('opacity',0).remove();
+  nSel.exit().transition().duration(200).attr('opacity',0).remove();
   const nE = nSel.enter().append('g').attr('class','node').attr('opacity',0)
-    .call(d3.drag().on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.08).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
+    .call(d3.drag().on('start',(e,d)=>{if(d._depth===-1)return;if(!e.active)sim.alphaTarget(0.03).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{if(d._depth===-1)return;d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(d._depth===-1)return;if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
   nE.append('circle'); nE.append('text').attr('class','node-label').attr('text-anchor','middle'); nE.append('text').attr('class','node-count').attr('text-anchor','middle');
   const nM = nE.merge(nSel);
-  nM.transition().duration(300).attr('opacity',1);
-  nM.select('circle').attr('r',d=>nr(d)).attr('fill',d=>PALETTE[d.group%PALETTE.length]).attr('fill-opacity',d=>d._depth===0?1.0:d._depth===1?0.85:0.7).attr('stroke',d=>PALETTE[d.group%PALETTE.length]).attr('stroke-width',d=>d._depth===0?2:1).attr('stroke-opacity',0.9).style('cursor',d=>childMap.has(d.id)?'pointer':'default');
-  nM.select('.node-label').attr('dy',d=>d._depth>=1?'0.35em':'-0.3em').style('font-size',d=>d._depth>=2?'7px':d._depth===1?'9px':'11px').text(d=>nr(d)<12?'':d.id);
-  nM.select('.node-count').attr('dy','1em').style('font-size',d=>d._depth>=2?'6px':d._depth===1?'8px':'10px').text(d=>nr(d)<12?'':d.size);
+  nM.transition().duration(200).attr('opacity',1);
+  nM.select('circle').attr('r',d=>nr(d)).attr('fill',d=>d._depth===-1?'#fdfdfe':PALETTE[d.group%PALETTE.length]).attr('fill-opacity',d=>d._depth===-1?0.95:d._depth===0?1.0:d._depth===1?0.85:0.7).attr('stroke',d=>d._depth===-1?'rgba(255,255,255,0.3)':PALETTE[d.group%PALETTE.length]).attr('stroke-width',d=>d._depth<=0?2:1).attr('stroke-opacity',0.9).style('cursor',d=>d._depth>=1?'pointer':'default');
+  nM.select('.node-label').attr('dy',d=>d._depth>=1?'0.35em':'-0.3em').style('font-size',d=>d._depth===-1?'13px':d._depth>=2?'7px':d._depth===1?'9px':'11px').style('fill',d=>d._depth===-1?'var(--bg-primary)':'').style('font-weight',d=>d._depth===-1?'600':'').text(d=>nr(d)<12?'':d.id);
+  nM.select('.node-count').attr('dy','1em').style('font-size',d=>d._depth>=2?'6px':d._depth===1?'8px':'10px').style('fill',d=>d._depth===-1?'var(--bg-primary)':'').text(d=>d._depth===-1?'':nr(d)<12?'':d.size);
 
-  nM.on('mouseover',(e,d)=>{
-    const info=d.top_companies&&d.top_companies.length?`<div class="companies">Top: ${d.top_companies.join(', ')}</div>`:d._parent?`<div class="companies">Cluster: ${d._parent}</div>`:'';
-    const hint=childMap.has(d.id)?`<div style="margin-top:4px;font-size:0.72rem;color:var(--accent-primary);">Click to ${d._expanded?'collapse':'expand'}</div>`:'';
-    tip.innerHTML=`<strong>${d.id}</strong><br>${d.size} connections${info}${hint}`;tip.style.opacity=1;tip.style.left=(e.offsetX+15)+'px';tip.style.top=(e.offsetY-10)+'px';
-  }).on('mouseout',()=>{tip.style.opacity=0});
-
+  /* Tooltip on click for child nodes only */
   nM.on('click',(e,d)=>{
-    if(!childMap.has(d.id))return;e.stopPropagation();d._expanded=!d._expanded;
-    if(d._expanded){const kids=childMap.get(d.id);kids.forEach(k=>{k.x=d.x+(Math.random()-0.5)*30;k.y=d.y+(Math.random()-0.5)*30});allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:3,_childLink:true,_group:d.group})})}
-    else{const descIds=getDescendantIds(d.id);allNodes=allNodes.filter(n=>!descIds.has(n.id));allLinks=allLinks.filter(l=>{if(!l._childLink)return true;const sid=l.source.id||l.source;const tid=l.target.id||l.target;return!descIds.has(tid)&&!descIds.has(sid)})}
-    restart();
+    e.stopPropagation();
+    if(d._depth>=1){const info=d.top_companies&&d.top_companies.length?`<div class="companies">Top: ${d.top_companies.join(', ')}</div>`:d._parent?`<div class="companies">Cluster: ${d._parent}</div>`:'';tip.innerHTML=`<strong>${d.id}</strong><br>${d.size} connections${info}`;tip.style.opacity=1;tip.style.left=(e.offsetX+15)+'px';tip.style.top=(e.offsetY-10)+'px';}
+    if(childMap.has(d.id)&&d._depth>=1){d._expanded=!d._expanded;
+      if(d._expanded){const kids=childMap.get(d.id);kids.forEach(k=>{k.x=d.x+(Math.random()-0.5)*30;k.y=d.y+(Math.random()-0.5)*30});allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:k.size,_childLink:true,_group:d.group})})}
+      else{const descIds=getDescendantIds(d.id);allNodes=allNodes.filter(n=>!descIds.has(n.id));allLinks=allLinks.filter(l=>{if(!l._childLink)return true;const sid=l.source.id||l.source;const tid=l.target.id||l.target;return!descIds.has(tid)&&!descIds.has(sid)})}
+      restart();}
   });
+  svg.on('click',()=>{tip.style.opacity=0});
 
   if(sim)sim.stop();
-  sim=d3.forceSimulation(allNodes).velocityDecay(0.55).alphaDecay(0.05).force('link',d3.forceLink(allLinks).id(d=>d.id).distance(d=>d._childLink?25+nr(d.source)+nr(d.target):160-(d.strength||4)*3)).force('charge',d3.forceManyBody().strength(d=>d._depth>=2?-25:d._depth>=1?-60:-300)).force('center',d3.forceCenter(w/2,h/2).strength(0.04)).force('collision',d3.forceCollide().radius(d=>nr(d)+(d._depth===0?10:3)).strength(0.8)).on('tick',()=>{lM.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nM.attr('transform',d=>`translate(${d.x},${d.y})`)});
-  sim.alpha(0.4).restart();
+  sim=d3.forceSimulation(allNodes).velocityDecay(0.7).alphaDecay(0.08)
+    .force('link',d3.forceLink(allLinks).id(d=>d.id).distance(d=>{if(d._youLink)return 180+nr(d.target);if(d._childLink)return 35+nr(d.source)+nr(d.target);return 250;}))
+    .force('charge',d3.forceManyBody().strength(d=>{if(d._depth===-1)return-800;if(d._depth===0)return-500;if(d._depth===1)return-40;return-15;}))
+    .force('center',d3.forceCenter(w/2,h/2).strength(0.03))
+    .force('collision',d3.forceCollide().radius(d=>{if(d._depth===-1)return youR+20;if(d._depth===0)return nr(d)+30;return nr(d)+5;}).strength(0.9))
+    .on('tick',()=>{lM.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nM.attr('transform',d=>`translate(${d.x},${d.y})`)});
+  youNode.fx=w/2;youNode.fy=h/2;
+  sim.alpha(0.3).restart();
 }
 restart();
 
 const leg = document.getElementById('legend');
+leg.innerHTML = `<div class="legend-item"><div class="legend-dot" style="background:#fdfdfe"></div>You</div>`;
 [...parentNodes].sort((a,b)=>b.size-a.size).forEach(n => {
   leg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[n.group%PALETTE.length]}"></div>${n.id} (${n.size})</div>`;
 });

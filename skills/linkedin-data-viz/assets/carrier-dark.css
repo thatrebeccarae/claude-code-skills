@@ -352,7 +352,7 @@ section:nth-child(even of section) {
    12. D3 Force Graph (Network Universe)
    ---------------------------------------------------------- */
 #graph-container { position: relative; }
-#graph { width: 100%; height: 600px; }
+#graph { width: 100%; height: 800px; }
 #graph svg { width: 100%; height: 100%; }
 
 .node-label {
