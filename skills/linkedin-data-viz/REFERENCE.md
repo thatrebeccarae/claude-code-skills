@@ -104,17 +104,19 @@ LinkedIn's algorithmic inferences about the user.
 
 | Column | Data Type | Notes |
 |--------|-----------|-------|
-| Category | string | Inference category (e.g., "Industry", "Job Function") |
+| Category | string | Inference category (e.g., "Job Function", "Job Activity") |
 | Type Of Inference | string | Inference type label |
-| Description | string | The actual inference value |
+| Description | string | Binary inference statement (e.g., "Not an HR Professional") |
 
 **Example:**
 
 ```csv
 Category,Type Of Inference,Description
-Industry,Predicted Industry,Computer Software
-Job Function,Predicted Job Function,Marketing
-Seniority,Predicted Seniority,Senior
+Job Function,Is/Is Not,Not an HR Professional
+Job Function,Is/Is Not,Is a Marketing Professional
+Job Activity,Is/Is Not,Is a Job Seeker
+Seniority,Is/Is Not,Is a Business Decision Maker
+Business Type,Is/Is Not,Not a Small Business Owner
 ```
 
 ---

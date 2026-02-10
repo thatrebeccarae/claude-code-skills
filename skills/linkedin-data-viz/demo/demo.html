@@ -513,11 +513,11 @@ const DATA = {
       { value: "1", label: "Wrong" }
     ],
     cards: [
-      { label: "Industry", verdict: "accurate", linkedin_says: "Marketing & Advertising", reality: "86% of connections work in marketing, advertising, or martech. Highly accurate." },
-      { label: "Job Function", verdict: "partial", linkedin_says: "Marketing Manager", reality: "More accurately described as Fractional CMO / Marketing Strategist. The \"manager\" label undersells seniority." },
-      { label: "Seniority", verdict: "accurate", linkedin_says: "Senior", reality: "Network is 62% Director+ level. Connection quality confirms senior positioning." },
-      { label: "Company Size", verdict: "wrong", linkedin_says: "1,001-5,000 employees", reality: "78% of recent connections are at companies with under 200 employees. Heavy startup/scale-up bias." },
-      { label: "Interests", verdict: "accurate", linkedin_says: "E-commerce, SaaS, Growth Marketing", reality: "Company follows and message topics align strongly with DTC e-commerce and SaaS growth." }
+      { label: "Is a Marketing Professional", verdict: "accurate", linkedin_says: "Job Function", reality: "Confirmed. 86% of connections are in marketing, advertising, or martech roles." },
+      { label: "Not an HR Professional", verdict: "accurate", linkedin_says: "Job Function", reality: "Correct. Only 3% of connections are in HR or recruiting roles." },
+      { label: "Is a Job Seeker", verdict: "partial", linkedin_says: "Job Activity", reality: "Actively exploring — but as a fractional CMO, not a traditional job seeker. LinkedIn's binary label misses the nuance." },
+      { label: "Is a Business Decision Maker", verdict: "accurate", linkedin_says: "Seniority", reality: "Network is 62% Director+ level. Engagement patterns confirm senior decision-maker positioning." },
+      { label: "Not a Small Business Owner", verdict: "wrong", linkedin_says: "Business Type", reality: "Runs a fractional CMO practice. LinkedIn miscategorizes solo consultants who serve enterprise clients." }
     ],
     follows_count: 142,
     follows: [
@@ -548,9 +548,9 @@ const DATA = {
       { name: "Pharmaceuticals", type: "irrelevant" }
     ],
     verdicts: [
-      { linkedin_label: "Industry", linkedin_value: "Marketing & Advertising", reality_value: "DTC E-Commerce + Martech" },
-      { linkedin_label: "Function", linkedin_value: "Marketing Manager", reality_value: "Fractional CMO / Strategist" },
-      { linkedin_label: "Company Size", linkedin_value: "1,001-5,000", reality_value: "Under 200 (startup/scale-up)" }
+      { linkedin_label: "Job Seeker", linkedin_value: "Is a Job Seeker", reality_value: "Fractional CMO exploring — not traditional job seeking" },
+      { linkedin_label: "Business Owner", linkedin_value: "Not a Small Business Owner", reality_value: "Runs independent consulting practice" },
+      { linkedin_label: "Decision Maker", linkedin_value: "Is a Business Decision Maker", reality_value: "Confirmed — 62% Director+ network" }
     ]
   },
   messages: {

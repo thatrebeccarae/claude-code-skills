@@ -63,20 +63,18 @@ Exposes what LinkedIn's algorithms think they know about the user and checks tho
 ```
 Compare LinkedIn's inferences about this user with their actual data.
 
-Inferences data contains LinkedIn's algorithmic predictions (industry, job function, seniority, interests).
+Inferences data contains LinkedIn's binary algorithmic predictions — statements like "Is a Marketing Professional", "Not an HR Professional", "Is a Job Seeker", "Is a Business Decision Maker". Each inference is a yes/no classification LinkedIn assigns to the user's profile.
 Ad targeting data contains the categories advertisers can use to target this user.
 Connection data provides ground truth about the user's actual professional network.
 
 For each inference:
-1. State what LinkedIn predicts (the inference description).
+1. State the exact inference text as the label (e.g., "Not an HR Professional", "Is a Job Seeker").
 2. Determine what the actual data shows:
-   - For industry inferences: check the most common industries in the user's connections and ad targeting.
-   - For role/function inferences: check the user's connection positions and ad targeting job functions.
-   - For seniority inferences: check connection position titles for seniority signals.
-   - For interest inferences: cross-reference with ad targeting interests and connection industries.
+   - Cross-reference against the user's connection positions, industries, and ad targeting data.
+   - Check if the binary classification matches the user's actual profile and network composition.
 3. Assign a verdict:
    - "accurate" if the inference closely matches reality
-   - "partial" if it's directionally correct but oversimplified or outdated
+   - "partial" if it's directionally correct but oversimplified or misses nuance
    - "wrong" if the data contradicts the inference
 4. Write a brief explanation of why.
 
