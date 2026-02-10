@@ -917,28 +917,35 @@ if (DATA.network) {
     /* Dismiss tooltip on background click */
     gsvg.on('click', () => { gTip.style.opacity = 0; });
 
-    /* Simulation — calm, well-spaced */
+    /* Simulation — children orbit parents, parents spread from You */
     if (gSim) gSim.stop();
     gSim = d3.forceSimulation(allNodes)
       .velocityDecay(0.7)
-      .alphaDecay(0.08)
-      .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => {
-        if (d._youLink) return 180 + nodeRadius(d.target);
-        if (d._childLink) return 35 + nodeRadius(d.source) + nodeRadius(d.target);
-        return 250;
-      }))
+      .alphaDecay(0.06)
+      .force('link', d3.forceLink(allLinks).id(d => d.id)
+        .distance(d => {
+          if (d._youLink) return 220 + nodeRadius(d.target) * 1.5;
+          if (d._childLink) return 20 + nodeRadius(d.target) * 2;
+          return 400;
+        })
+        .strength(d => {
+          if (d._childLink) return 0.9;
+          if (d._youLink) return 0.3;
+          return 0.02;
+        })
+      )
       .force('charge', d3.forceManyBody().strength(d => {
-        if (d._depth === -1) return -800;
-        if (d._depth === 0) return -500;
-        if (d._depth === 1) return -40;
-        return -15;
+        if (d._depth === -1) return -1500;
+        if (d._depth === 0) return -900;
+        if (d._depth === 1) return -30;
+        return -10;
       }))
-      .force('center', d3.forceCenter(gw / 2, gh / 2).strength(0.03))
+      .force('center', d3.forceCenter(gw / 2, gh / 2).strength(0.015))
       .force('collision', d3.forceCollide().radius(d => {
-        if (d._depth === -1) return youRadius + 20;
-        if (d._depth === 0) return nodeRadius(d) + 30;
-        return nodeRadius(d) + 5;
-      }).strength(0.9))
+        if (d._depth === -1) return youRadius + 25;
+        if (d._depth === 0) return nodeRadius(d) + 40;
+        return nodeRadius(d) + 6;
+      }).strength(1.0))
       .on('tick', () => {
         linkMerge.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
         nodeMerge.attr('transform', d => `translate(${d.x},${d.y})`);
