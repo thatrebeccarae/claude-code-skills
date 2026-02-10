@@ -827,42 +827,40 @@ if (DATA.network) {
   let gSim;
   const cx = gw / 2, cy = gh / 2;
 
-  /* ── DETERMINISTIC GEOMETRIC LAYOUT (no simulation drift) ── */
+  /* ── FORCE-DIRECTED, PRE-SETTLED BEFORE RENDER ── */
   youNode.x = cx; youNode.y = cy; youNode.fx = cx; youNode.fy = cy;
 
-  /* Parents in a tight circle around You */
-  const orbitR = Math.min(gw, gh) * 0.25;
+  /* Seed parents in rough circle so simulation converges faster */
   parentNodes.forEach((p, i) => {
     const a = (i / parentNodes.length) * 2 * Math.PI - Math.PI / 2;
-    const r = orbitR + nodeRadius(p) * 0.6;
-    p.x = cx + Math.cos(a) * r;
-    p.y = cy + Math.sin(a) * r;
-    p.fx = p.x; p.fy = p.y;
+    p.x = cx + Math.cos(a) * 150;
+    p.y = cy + Math.sin(a) * 150;
   });
 
-  /* Position children in arc outward from their parent */
-  function positionChildren(parent) {
-    const kids = allNodes.filter(n => n._parent === parent.id && n._depth === parent._depth + 1);
-    if (!kids.length) return;
-    const pAngle = Math.atan2(parent.y - cy, parent.x - cx);
-    const count = kids.length;
-    const spread = Math.min(Math.PI * 0.7, count * 0.35);
-    kids.forEach((k, i) => {
-      const a = count > 1 ? pAngle - spread / 2 + (i / (count - 1)) * spread : pAngle;
-      const dist = nodeRadius(parent) + 12 + nodeRadius(k) * 2;
-      k.x = parent.x + Math.cos(a) * dist;
-      k.y = parent.y + Math.sin(a) * dist;
-      k.fx = k.x; k.fy = k.y;
-    });
-  }
-  parentNodes.forEach(p => positionChildren(p));
-
-  /* Dormant simulation — only for drag + link ID resolution */
-  function initSim() {
+  function buildSim() {
     if (gSim) gSim.stop();
     gSim = d3.forceSimulation(allNodes)
-      .force('link', d3.forceLink(allLinks).id(d => d.id).strength(0))
-      .alpha(0).stop();
+      .force('link', d3.forceLink(allLinks).id(d => d.id)
+        .distance(d => {
+          if (d._youLink) return 80 + Math.sqrt(d.strength) * 8;
+          if (d._childLink) return nodeRadius(d.source) + nodeRadius(d.target) + 15;
+          return 200;
+        })
+        .strength(d => {
+          if (d._youLink) return 0.4;
+          if (d._childLink) return 0.8;
+          return 0.05;
+        })
+      )
+      .force('charge', d3.forceManyBody().strength(d => {
+        if (d._depth === -1) return -1500;
+        if (d._depth === 0) return -400 - d.size * 0.5;
+        return -30;
+      }))
+      .force('center', d3.forceCenter(cx, cy).strength(0.05))
+      .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 6).strength(0.8));
+    youNode.fx = cx; youNode.fy = cy;
+    return gSim;
   }
 
   function renderDOM() {
@@ -886,9 +884,9 @@ if (DATA.network) {
 
     const nodeEnter = nodeSel.enter().append('g').attr('class', 'node')
       .call(d3.drag()
-        .on('start', (e, d) => { if (d._depth === -1) return; gSim.alphaTarget(0.01).restart(); })
+        .on('start', (e, d) => { if (d._depth === -1) return; if (!e.active) gSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
         .on('drag', (e, d) => { if (d._depth === -1) return; d.fx = e.x; d.fy = e.y; })
-        .on('end', (e, d) => { if (d._depth === -1) return; gSim.alphaTarget(0); d.x = d.fx; d.y = d.fy; })
+        .on('end', (e, d) => { if (d._depth === -1) return; if (!e.active) gSim.alphaTarget(0); d.fx = null; d.fy = null; })
       );
     nodeEnter.append('circle');
     nodeEnter.append('text').attr('class', 'node-label').attr('text-anchor', 'middle');
@@ -936,9 +934,9 @@ if (DATA.network) {
         d._expanded = !d._expanded;
         if (d._expanded) {
           const kids = childMap.get(d.id);
+          kids.forEach(k => { k.x = d.x + (Math.random() - 0.5) * 30; k.y = d.y + (Math.random() - 0.5) * 30; });
           allNodes = allNodes.concat(kids);
           kids.forEach(k => { allLinks.push({ source: d.id, target: k.id, strength: k.size, _childLink: true, _group: d.group }); });
-          positionChildren(d);
         } else {
           const descIds = getDescendantIds(d.id);
           allNodes = allNodes.filter(n => !descIds.has(n.id));
@@ -959,7 +957,9 @@ if (DATA.network) {
   }
 
   function render() {
-    initSim();
+    buildSim();
+    gSim.tick(300);
+    gSim.stop();
     const { linkMerge, nodeMerge } = renderDOM();
     linkMerge.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     nodeMerge.attr('transform', d => `translate(${d.x},${d.y})`);
@@ -967,6 +967,7 @@ if (DATA.network) {
       linkMerge.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
       nodeMerge.attr('transform', d => `translate(${d.x},${d.y})`);
     });
+    gSim.alpha(0).restart();
   }
 
   render();

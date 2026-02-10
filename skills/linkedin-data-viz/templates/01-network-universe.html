@@ -109,22 +109,20 @@ const nodeLayer = svg.append('g');
 let sim;
 const cx=w/2, cy=h/2;
 
-/* Deterministic geometric layout — no simulation drift */
+/* Force-directed, pre-settled before render */
 youNode.x=cx;youNode.y=cy;youNode.fx=cx;youNode.fy=cy;
-const orbitR=Math.min(w,h)*0.25;
-parentNodes.forEach((p,i)=>{const a=(i/parentNodes.length)*2*Math.PI-Math.PI/2;const r=orbitR+nr(p)*0.6;p.x=cx+Math.cos(a)*r;p.y=cy+Math.sin(a)*r;p.fx=p.x;p.fy=p.y;});
+parentNodes.forEach((p,i)=>{const a=(i/parentNodes.length)*2*Math.PI-Math.PI/2;p.x=cx+Math.cos(a)*150;p.y=cy+Math.sin(a)*150;});
 
-function positionChildren(parent){
-  const kids=allNodes.filter(n=>n._parent===parent.id&&n._depth===parent._depth+1);if(!kids.length)return;
-  const pA=Math.atan2(parent.y-cy,parent.x-cx);const count=kids.length;
-  const spread=Math.min(Math.PI*0.7,count*0.35);
-  kids.forEach((k,i)=>{const a=count>1?pA-spread/2+(i/(count-1))*spread:pA;const dist=nr(parent)+12+nr(k)*2;k.x=parent.x+Math.cos(a)*dist;k.y=parent.y+Math.sin(a)*dist;k.fx=k.x;k.fy=k.y;});
-}
-parentNodes.forEach(p=>positionChildren(p));
-
-function initSim(){
+function buildSim(){
   if(sim)sim.stop();
-  sim=d3.forceSimulation(allNodes).force('link',d3.forceLink(allLinks).id(d=>d.id).strength(0)).alpha(0).stop();
+  sim=d3.forceSimulation(allNodes)
+    .force('link',d3.forceLink(allLinks).id(d=>d.id)
+      .distance(d=>{if(d._youLink)return 80+Math.sqrt(d.strength)*8;if(d._childLink)return nr(d.source)+nr(d.target)+15;return 200;})
+      .strength(d=>{if(d._youLink)return 0.4;if(d._childLink)return 0.8;return 0.05;}))
+    .force('charge',d3.forceManyBody().strength(d=>{if(d._depth===-1)return-1500;if(d._depth===0)return-400-d.size*0.5;return-30;}))
+    .force('center',d3.forceCenter(cx,cy).strength(0.05))
+    .force('collision',d3.forceCollide().radius(d=>nr(d)+6).strength(0.8));
+  youNode.fx=cx;youNode.fy=cy;return sim;
 }
 
 function renderDOM(){
@@ -133,7 +131,7 @@ function renderDOM(){
   lM.attr('stroke-width',d=>lw(d)).attr('stroke-opacity',d=>lo(d)).attr('stroke',d=>{if(d._youLink)return'rgba(255,255,255,0.4)';if(d._childLink)return PALETTE[d._group%PALETTE.length];return'rgba(255,255,255,0.25)';});
   const nSel=nodeLayer.selectAll('g.node').data(allNodes,d=>d.id);nSel.exit().remove();
   const nE=nSel.enter().append('g').attr('class','node')
-    .call(d3.drag().on('start',(e,d)=>{if(d._depth===-1)return;sim.alphaTarget(0.01).restart()}).on('drag',(e,d)=>{if(d._depth===-1)return;d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(d._depth===-1)return;sim.alphaTarget(0);d.x=d.fx;d.y=d.fy}));
+    .call(d3.drag().on('start',(e,d)=>{if(d._depth===-1)return;if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{if(d._depth===-1)return;d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(d._depth===-1)return;if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
   nE.append('circle');nE.append('text').attr('class','node-label').attr('text-anchor','middle');nE.append('text').attr('class','node-count').attr('text-anchor','middle');
   const nM=nE.merge(nSel);nM.attr('opacity',1);
   nM.select('circle').attr('r',d=>nr(d)).attr('fill',d=>d._depth===-1?'#fdfdfe':PALETTE[d.group%PALETTE.length]).attr('fill-opacity',d=>d._depth===-1?0.95:d._depth===0?1.0:d._depth===1?0.85:0.7).attr('stroke',d=>d._depth===-1?'rgba(255,255,255,0.3)':PALETTE[d.group%PALETTE.length]).attr('stroke-width',d=>d._depth<=0?2:1).attr('stroke-opacity',0.9).style('cursor',d=>d._depth>=1?'pointer':'default');
@@ -143,7 +141,7 @@ function renderDOM(){
     e.stopPropagation();
     if(d._depth>=1){const info=d.top_companies&&d.top_companies.length?`<div class="companies">Top: ${d.top_companies.join(', ')}</div>`:d._parent?`<div class="companies">Cluster: ${d._parent}</div>`:'';tip.innerHTML=`<strong>${d.id}</strong><br>${d.size} connections${info}`;tip.style.opacity=1;tip.style.left=(e.offsetX+15)+'px';tip.style.top=(e.offsetY-10)+'px';}
     if(childMap.has(d.id)&&d._depth>=1){d._expanded=!d._expanded;
-      if(d._expanded){const kids=childMap.get(d.id);allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:k.size,_childLink:true,_group:d.group})});positionChildren(d)}
+      if(d._expanded){const kids=childMap.get(d.id);kids.forEach(k=>{k.x=d.x+(Math.random()-0.5)*30;k.y=d.y+(Math.random()-0.5)*30});allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:k.size,_childLink:true,_group:d.group})})}
       else{const descIds=getDescendantIds(d.id);allNodes=allNodes.filter(n=>!descIds.has(n.id));allLinks=allLinks.filter(l=>{if(!l._childLink)return true;const sid=l.source.id||l.source;const tid=l.target.id||l.target;return!descIds.has(tid)&&!descIds.has(sid)})}
       render();}
   });
@@ -152,11 +150,12 @@ function renderDOM(){
 }
 
 function render(){
-  initSim();
+  buildSim();sim.tick(300);sim.stop();
   const{lM,nM}=renderDOM();
   lM.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
   nM.attr('transform',d=>`translate(${d.x},${d.y})`);
   sim.on('tick',()=>{lM.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nM.attr('transform',d=>`translate(${d.x},${d.y})`)});
+  sim.alpha(0).restart();
 }
 render();
 
