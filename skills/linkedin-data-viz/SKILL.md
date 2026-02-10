@@ -40,6 +40,7 @@ Tell the user how to request their LinkedIn data archive if they have not alread
 | `Company Follows.csv` | Companies the user follows |
 | `Inferences_about_you.csv` | LinkedIn's algorithmic guesses about the user |
 | `Ad_Targeting.csv` | Advertiser targeting categories applied to the user |
+| `Shares.csv` | Posts/shares created by the user (optional — enables posting correlation) |
 
 **Gate:** Ask the user to confirm they have their LinkedIn data export ready before proceeding.
 
@@ -99,7 +100,7 @@ Parse the CSV files and display summary statistics. Then let the user choose whi
 ```
 Which visualizations would you like to generate?
 
-  (a) All 9 visualizations + unified dashboard
+  (a) All 10 visualizations + unified dashboard
   (b) Pick specific ones:
       1. Network Universe — Force-directed graph of connections by role
       2. Inferences vs Reality — LinkedIn's guesses vs actual data
@@ -109,7 +110,8 @@ Which visualizations would you like to generate?
       6. Connection Quality — Relationship depth analysis
       7. Connection Timeline — Recent connections with engagement
       8. Inbox Quality — Genuine vs noise messages over time
-      9. Career Strata — Network as geological layers by career phase
+      9. Does Posting Actually Work? — Posting frequency vs connection growth correlation
+      10. Career Strata — Network as geological layers by career phase
   (c) Quick sample (Network Universe + Career Strata only)
 ```
 
@@ -145,8 +147,8 @@ Parse, analyze, and generate HTML files. Show progress throughout.
 
 ```
 [1/4] Parsing CSV files...              done (1,247 connections)
-[2/4] Running analysis algorithms...     done (9 analyses complete)
-[3/4] Generating HTML visualizations...  done (9 files + dashboard)
+[2/4] Running analysis algorithms...     done (10 analyses complete)
+[3/4] Generating HTML visualizations...  done (10 files + dashboard)
 [4/4] Copying assets...                  done
 
 Output directory: /Users/you/linkedin-viz-output/
@@ -160,7 +162,8 @@ Generated files:
   06-connection-quality.html
   07-connection-timeline.html
   08-inbox-quality.html
-  09-career-strata.html
+  09-posting-correlation.html
+  10-career-strata.html
   dashboard.html
 ```
 
@@ -170,7 +173,7 @@ Generated files:
 
 ---
 
-## The 9 Visualizations
+## The 10 Visualizations
 
 ### 1. Network Universe
 
@@ -204,7 +207,11 @@ Tabular view of the most recent connections with engagement data. Shows directio
 
 Message volume over time split into Genuine (real conversations) vs Noise (spam, InMail, automated). Stacked area chart with trend analysis. Uses `messages.csv`.
 
-### 9. Career Strata
+### 9. Does Posting Actually Work?
+
+Dual-axis chart correlating posting frequency (line) with new connection growth (bars) over time. Calculates the Pearson correlation coefficient and surfaces key metrics: percentage increase in connections during active posting periods, and average connections per month before vs after consistent posting. Uses `Shares.csv`, `Connections.csv`.
+
+### 10. Career Strata
 
 The user's network visualized as geological layers by career phase. Each stratum represents a time period, colored from deep (oldest) to elevated (newest). Shows connection count and percentage per era. Uses `Connections.csv`.
 

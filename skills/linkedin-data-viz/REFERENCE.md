@@ -159,6 +159,29 @@ Member Age,Member Gender,Member Industry,...
 
 ---
 
+### Shares.csv
+
+LinkedIn posts (shares) created by the user. Not always included in exports; availability depends on the export options selected.
+
+| Column | Data Type | Notes |
+|--------|-----------|-------|
+| Date | string | Post date (various formats) |
+| ShareLink | string | URL to the LinkedIn post |
+| ShareCommentary | string | Post text/caption (may be empty for reshares) |
+| SharedUrl | string | URL shared in the post (if any) |
+| MediaUrl | string | Attached media URL (if any) |
+
+**Example:**
+
+```csv
+Date,ShareLink,ShareCommentary,SharedUrl,MediaUrl
+2025-07-15,https://www.linkedin.com/feed/update/urn:li:share:123,"Thoughts on attribution modeling...",https://example.com/article,
+```
+
+**Parsing note:** Group posts by month (YYYY-MM) to correlate with connection growth from Connections.csv. If `Shares.csv` is not present in the export, the posting correlation visualization cannot be generated.
+
+---
+
 ## Parsing Quirks
 
 ### Connections.csv 3-Line Header Skip
@@ -564,7 +587,35 @@ Each template expects specific keys in the `DATA` object.
 }
 ```
 
-#### 09-career-strata.html
+#### 09-posting-correlation.html
+
+```json
+{
+  "chart_title": "string",
+  "labels": ["string"],
+  "connections": [0],
+  "posts": [0],
+  "highlights": [
+    {
+      "value": "string",
+      "label": "string",
+      "note": "string"
+    }
+  ],
+  "prompt": {
+    "text": "string",
+    "sources": "string"
+  },
+  "stats": {
+    "correlation": 0.0,
+    "connectionsIncrease": "string",
+    "avgBefore": 0,
+    "avgAfter": 0
+  }
+}
+```
+
+#### 10-career-strata.html
 
 ```json
 {
@@ -590,7 +641,7 @@ Each template expects specific keys in the `DATA` object.
 
 #### dashboard.html
 
-The unified dashboard expects the full combined data object with all keys from all 9 visualizations, namespaced under top-level keys:
+The unified dashboard expects the full combined data object with all keys from all 10 visualizations, namespaced under top-level keys:
 
 ```json
 {
@@ -602,6 +653,7 @@ The unified dashboard expects the full combined data object with all keys from a
   "connectionQuality": { ... },
   "connectionTimeline": { ... },
   "inboxQuality": { ... },
+  "postingCorrelation": { ... },
   "careerStrata": { ... },
   "summary": {
     "totalConnections": 0,

@@ -381,7 +381,57 @@ Return structured JSON matching the Inbox Quality data schema.
 
 ---
 
-## 9. Career Strata
+## 9. Does Posting Actually Work?
+
+### Purpose
+
+Answers the question every LinkedIn user asks: does posting content actually grow your network? Correlates posting frequency (from Shares.csv) with new connection growth (from Connections.csv) by month, calculates the Pearson correlation coefficient, and visualizes both series on a dual-axis chart.
+
+### Data Sources
+
+- `Shares.csv` -- post dates and content
+- `Connections.csv` -- connection dates for monthly growth calculation
+
+### Analysis Prompt
+
+```
+Analyze whether posting on LinkedIn correlates with new connection growth.
+
+Algorithm:
+1. Parse Shares.csv and group posts by month (YYYY-MM).
+2. Parse Connections.csv and count new connections per month (by Connected On date).
+3. Align the two series to the same month range (earliest to latest that appears in either dataset).
+4. Fill months with zero posts or zero connections as 0.
+5. Calculate the Pearson correlation coefficient between monthly post count and monthly new connections.
+6. Identify "before" and "after" periods:
+   - "Before consistent posting" = months where post count is 0-1.
+   - "After consistent posting" = months where post count is 3+.
+   - Calculate average new connections per month for each period.
+7. Calculate percentage increase: ((avg_after - avg_before) / avg_before) * 100.
+
+Generate a chart_title that includes the correlation coefficient and a plain-English interpretation:
+- r >= 0.7: "Posting drives connection growth"
+- r >= 0.4: "Posting moderately correlates with growth"
+- r < 0.4: "Weak correlation between posting and growth"
+
+Generate three highlight cards:
+- Correlation coefficient with interpretation
+- Percentage increase in connections during active posting
+- Average connections per month: before vs after
+
+Return structured JSON matching the Posting Correlation data schema.
+```
+
+### Customization Ideas
+
+- **Lag analysis:** Check if connections spike 1-2 months after posting (delayed effect) rather than same-month.
+- **Content type breakdown:** If ShareCommentary data is rich enough, categorize posts (original content, reshares, polls) and see which type drives the most connections.
+- **Engagement overlay:** If Reactions.csv is available, overlay reaction counts as a third axis.
+- **Posting cadence:** Calculate optimal posting frequency (e.g., "posting 6+ times/month yields 3x more connections than 1-2 times").
+
+---
+
+## 10. Career Strata
 
 ### Purpose
 

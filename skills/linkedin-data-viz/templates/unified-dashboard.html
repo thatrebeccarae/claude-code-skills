@@ -26,6 +26,7 @@
     <a href="#quality" class="nav-link">Quality</a>
     <a href="#timeline" class="nav-link">Timeline</a>
     <a href="#inbox" class="nav-link">Inbox</a>
+    <a href="#posting" class="nav-link">Posting</a>
     <a href="#strata" class="nav-link">Strata</a>
   </div>
 </nav>
@@ -164,10 +165,26 @@
 </div>
 </section>
 
-<!-- 09: CAREER STRATA -->
-<section id="strata">
+<!-- 09: DOES POSTING ACTUALLY WORK? -->
+<section id="posting">
 <div class="section-inner">
   <div class="section-num">09</div>
+  <h2 class="section-title">Does Posting Actually Work?</h2>
+  <p class="section-subtitle">Correlation between posting frequency and new connection requests.</p>
+  <div class="card"><div class="chart-box" style="height:480px;"><canvas id="postingChart"></canvas></div></div>
+  <div class="highlight-row" id="posting-highlights"></div>
+  <div class="prompt-box" id="posting-prompt-box" style="display:none;">
+    <div class="prompt-label">Prompt to Try</div>
+    <div class="prompt-text" id="posting-prompt"></div>
+    <div class="prompt-sources" id="posting-sources"></div>
+  </div>
+</div>
+</section>
+
+<!-- 10: CAREER STRATA -->
+<section id="strata">
+<div class="section-inner">
+  <div class="section-num">10</div>
   <h2 class="section-title">Career Strata</h2>
   <p class="section-subtitle">Your network as geological layers. Each stratum represents a career phase, with connections accumulated during that era. Hover to expand.</p>
   <div class="stats-row" id="strata-stats"></div>
@@ -603,7 +620,46 @@ if (DATA.inbox) {
   });
 }
 
-/* ═══════ 09: CAREER STRATA ═══════ */
+/* ═══════ 09: POSTING CORRELATION ═══════ */
+if (DATA.posting) {
+  const pc = DATA.posting;
+  new Chart(document.getElementById('postingChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: pc.labels,
+      datasets: [
+        { label: 'New Connections', data: pc.connections, backgroundColor: VIZ.gold + 'cc', borderRadius: 4, barPercentage: 0.75, order: 2, yAxisID: 'y' },
+        { label: 'Posts', data: pc.posts, type: 'line', borderColor: VIZ.teal, backgroundColor: VIZ.teal + '22', pointBackgroundColor: VIZ.teal, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, tension: 0.3, fill: false, order: 1, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: pc.chart_title || '', color: '#8b949e', font: { family: 'Inter', size: 13, weight: '400' }, padding: { bottom: 16 } },
+        legend: { position: 'top', align: 'center', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, padding: 14 } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } },
+        y: { position: 'left', title: { display: true, text: 'New Connections', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true },
+        y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+      }
+    }
+  });
+  const ph = document.getElementById('posting-highlights');
+  if (ph && pc.highlights) {
+    ph.innerHTML = pc.highlights.map(h => `<div class="highlight-card"><div class="highlight-value">${h.value}</div><div class="highlight-label">${h.label}</div><div class="highlight-note">${h.note}</div></div>`).join('');
+  }
+  if (pc.prompt) {
+    const pb = document.getElementById('posting-prompt-box');
+    if (pb) pb.style.display = 'block';
+    const pp = document.getElementById('posting-prompt');
+    if (pp) pp.textContent = pc.prompt.text;
+    const ps = document.getElementById('posting-sources');
+    if (ps) ps.textContent = pc.prompt.sources;
+  }
+}
+
+/* ═══════ 10: CAREER STRATA ═══════ */
 if (DATA.strata) {
   const st = DATA.strata;
   renderStats('strata-stats', st.stats || []);

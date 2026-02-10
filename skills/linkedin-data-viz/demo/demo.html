@@ -197,6 +197,18 @@ section:nth-child(even of section){background:var(--bg-surface)}
 .layer-6{background:#283948;color:#b0ecea}.layer-7{background:#2D4050;color:#c1f7f5}
 .layer-8{background:#324758;color:#fdfdfe}
 
+/* Posting Correlation */
+.highlight-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:28px}
+@media(max-width:768px){.highlight-row{grid-template-columns:1fr}}
+.highlight-card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:28px;text-align:center}
+.highlight-value{font-size:2.2rem;font-weight:300;color:var(--viz-gold);font-family:'JetBrains Mono',monospace;letter-spacing:-0.02em}
+.highlight-label{font-size:0.85rem;color:var(--text-secondary);margin-top:4px}
+.highlight-note{font-size:0.75rem;color:var(--text-muted);margin-top:4px}
+.prompt-box{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);border-radius:var(--radius-lg);padding:28px;margin-top:28px}
+.prompt-label{font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--viz-gold);margin-bottom:12px}
+.prompt-text{font-size:0.92rem;color:var(--text-primary);line-height:1.7;padding:16px 20px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);font-family:'Inter',sans-serif}
+.prompt-sources{font-size:0.75rem;color:var(--text-muted);margin-top:10px}
+
 /* Footer */
 .footer{text-align:center;padding:48px 40px;font-size:0.8rem;color:var(--text-muted);border-top:1px solid var(--border-subtle)}
 .footer a{color:var(--accent-primary);text-decoration:none}.footer a:hover{color:var(--accent-hover)}
@@ -225,6 +237,7 @@ section:nth-child(even of section){background:var(--bg-surface)}
     <a href="#quality" class="nav-link">Quality</a>
     <a href="#timeline" class="nav-link">Timeline</a>
     <a href="#inbox" class="nav-link">Inbox</a>
+    <a href="#posting" class="nav-link">Posting</a>
     <a href="#strata" class="nav-link">Strata</a>
   </div>
 </nav>
@@ -363,10 +376,26 @@ section:nth-child(even of section){background:var(--bg-surface)}
 </div>
 </section>
 
-<!-- 09: CAREER STRATA -->
-<section id="strata">
+<!-- 09: DOES POSTING ACTUALLY WORK? -->
+<section id="posting">
 <div class="section-inner">
   <div class="section-num">09</div>
+  <h2 class="section-title">Does Posting Actually Work?</h2>
+  <p class="section-subtitle">Correlation between posting frequency and new connection requests.</p>
+  <div class="card"><div class="chart-box" style="height:480px;"><canvas id="postingChart"></canvas></div></div>
+  <div class="highlight-row" id="posting-highlights"></div>
+  <div class="prompt-box">
+    <div class="prompt-label">Prompt to Try</div>
+    <div class="prompt-text" id="posting-prompt"></div>
+    <div class="prompt-sources" id="posting-sources"></div>
+  </div>
+</div>
+</section>
+
+<!-- 10: CAREER STRATA -->
+<section id="strata">
+<div class="section-inner">
+  <div class="section-num">10</div>
   <h2 class="section-title">Career Strata</h2>
   <p class="section-subtitle">Your network as geological layers. Each stratum represents a career phase, with connections accumulated during that era. Hover to expand.</p>
   <div class="stats-row" id="strata-stats"></div>
@@ -686,6 +715,21 @@ const DATA = {
       { label: "Noise Sources", value: "Primarily InMail and automated recruiter outreach" },
       { label: "Response Pattern", value: "You respond to 78% of genuine messages within 48 hours" }
     ]
+  },
+  posting: {
+    chart_title: "Correlation: 0.71 — Posting drives connection growth",
+    labels: ["Nov '23","Dec '23","Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25"],
+    connections: [35, 80, 80, 35, 130, 115, 230, 110, 105, 70, 30, 10, 75, 85, 70, 130, 110, 85, 170, 85, 180, 150, 120, 115, 65],
+    posts: [2, 3, 3, 3, 7, 7, 14, 7, 7, 4, 3, 2, 5, 5, 4, 8, 6, 4, 10, 4, 10, 8, 7, 4, 1],
+    highlights: [
+      { value: "0.71", label: "correlation coefficient", note: "(that's strong)" },
+      { value: "1833%", label: "more connections/month", note: "after consistent posting" },
+      { value: "5 → 100", label: "avg connections/month", note: "before vs after" }
+    ],
+    prompt: {
+      text: "\"Is there a correlation between posting frequency and new connections? Compare my Shares.csv (posts) with Connections.csv (connection dates) by month. Calculate the correlation coefficient and visualize both on a chart.\"",
+      sources: "Uses: Shares.csv, Connections.csv"
+    }
   },
   strata: {
     stats: [
@@ -1160,7 +1204,42 @@ if (DATA.inbox) {
   });
 }
 
-/* 09: STRATA */
+/* 09: POSTING CORRELATION */
+if (DATA.posting) {
+  const pc = DATA.posting;
+  new Chart(document.getElementById('postingChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: pc.labels,
+      datasets: [
+        { label: 'New Connections', data: pc.connections, backgroundColor: VIZ.gold + 'cc', borderRadius: 4, barPercentage: 0.75, order: 2, yAxisID: 'y' },
+        { label: 'Posts', data: pc.posts, type: 'line', borderColor: VIZ.teal, backgroundColor: VIZ.teal + '22', pointBackgroundColor: VIZ.teal, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, tension: 0.3, fill: false, order: 1, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: pc.chart_title, color: '#8b949e', font: { family: 'Inter', size: 13, weight: '400' }, padding: { bottom: 16 } },
+        legend: { position: 'top', align: 'center', labels: { font: { family: 'Inter', size: 11 }, color: '#8b949e', boxWidth: 12, padding: 14, usePointStyle: false } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } },
+        y: { position: 'left', title: { display: true, text: 'New Connections', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true },
+        y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+      }
+    }
+  });
+  const ph = document.getElementById('posting-highlights');
+  if (ph && pc.highlights) {
+    ph.innerHTML = pc.highlights.map(h => `<div class="highlight-card"><div class="highlight-value">${h.value}</div><div class="highlight-label">${h.label}</div><div class="highlight-note">${h.note}</div></div>`).join('');
+  }
+  const pp = document.getElementById('posting-prompt');
+  if (pp && pc.prompt) { pp.textContent = pc.prompt.text; }
+  const ps = document.getElementById('posting-sources');
+  if (ps && pc.prompt) { ps.textContent = pc.prompt.sources; }
+}
+
+/* 10: STRATA */
 if (DATA.strata) {
   const st = DATA.strata;
   renderStats('strata-stats', st.stats || []);
