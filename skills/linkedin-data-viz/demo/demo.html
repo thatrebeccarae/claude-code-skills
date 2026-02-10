@@ -804,12 +804,12 @@ if (DATA.network) {
   const maxCrossStrength = d3.max(nd.links, d => d.strength) || 22;
   function linkWidth(d) {
     if (d._youLink) return Math.max(1.5, (d.strength / maxParentSize) * 8);
-    if (d._childLink) return Math.max(0.5, (d.strength / 120) * 2);
+    if (d._childLink) return Math.max(1.5, (d.strength / 120) * 3.5);
     return Math.max(1, (d.strength || 4) / maxCrossStrength * 4);
   }
   function linkOpacity(d) {
     if (d._youLink) return Math.max(0.2, (d.strength / maxParentSize) * 0.65);
-    if (d._childLink) return Math.max(0.2, (d.strength / 120) * 0.45);
+    if (d._childLink) return Math.max(0.4, (d.strength / 120) * 0.7);
     return Math.max(0.2, (d.strength || 4) / maxCrossStrength * 0.5);
   }
 
@@ -830,11 +830,23 @@ if (DATA.network) {
   /* ── FORCE-DIRECTED, PRE-SETTLED BEFORE RENDER ── */
   youNode.x = cx; youNode.y = cy; youNode.fx = cx; youNode.fy = cy;
 
-  /* Seed parents in rough circle so simulation converges faster */
+  /* Seed parents with noisy positions so cross-links create asymmetric layout */
   parentNodes.forEach((p, i) => {
-    const a = (i / parentNodes.length) * 2 * Math.PI - Math.PI / 2;
-    p.x = cx + Math.cos(a) * 150;
-    p.y = cy + Math.sin(a) * 150;
+    const a = (i / parentNodes.length) * 2 * Math.PI - Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+    const r = 120 + Math.sqrt(p.size) * 4 + (Math.random() - 0.5) * 60;
+    p.x = cx + Math.cos(a) * r;
+    p.y = cy + Math.sin(a) * r;
+  });
+  /* Seed children on outward side of parent (away from You) */
+  allNodes.forEach(d => {
+    if (d._depth >= 1 && d._parent) {
+      const par = allNodes.find(n => n.id === d._parent);
+      if (par && par.x != null) {
+        const dx = par.x - cx, dy = par.y - cy, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        d.x = par.x + (dx / dist) * 25 + (Math.random() - 0.5) * 20;
+        d.y = par.y + (dy / dist) * 25 + (Math.random() - 0.5) * 20;
+      }
+    }
   });
 
   function buildSim() {
@@ -842,23 +854,23 @@ if (DATA.network) {
     gSim = d3.forceSimulation(allNodes)
       .force('link', d3.forceLink(allLinks).id(d => d.id)
         .distance(d => {
-          if (d._youLink) return 80 + Math.sqrt(d.strength) * 8;
-          if (d._childLink) return nodeRadius(d.source) + nodeRadius(d.target) + 15;
-          return 200;
+          if (d._youLink) return 100 + Math.sqrt(d.strength) * 10;
+          if (d._childLink) return nodeRadius(d.source) + nodeRadius(d.target) + 20;
+          return 160;
         })
         .strength(d => {
-          if (d._youLink) return 0.4;
-          if (d._childLink) return 0.8;
-          return 0.05;
+          if (d._youLink) return 0.2;
+          if (d._childLink) return 0.7;
+          return 0.15;
         })
       )
       .force('charge', d3.forceManyBody().strength(d => {
         if (d._depth === -1) return -1500;
-        if (d._depth === 0) return -400 - d.size * 0.5;
-        return -30;
+        if (d._depth === 0) return -600 - d.size * 0.8;
+        return -60;
       }))
-      .force('center', d3.forceCenter(cx, cy).strength(0.05))
-      .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 6).strength(0.8));
+      .force('center', d3.forceCenter(cx, cy).strength(0.03))
+      .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 8).strength(0.9));
     youNode.fx = cx; youNode.fy = cy;
     return gSim;
   }
@@ -934,7 +946,8 @@ if (DATA.network) {
         d._expanded = !d._expanded;
         if (d._expanded) {
           const kids = childMap.get(d.id);
-          kids.forEach(k => { k.x = d.x + (Math.random() - 0.5) * 30; k.y = d.y + (Math.random() - 0.5) * 30; });
+          const ddx = d.x - cx, ddy = d.y - cy, ddist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+          kids.forEach(k => { k.x = d.x + (ddx / ddist) * 25 + (Math.random() - 0.5) * 20; k.y = d.y + (ddy / ddist) * 25 + (Math.random() - 0.5) * 20; });
           allNodes = allNodes.concat(kids);
           kids.forEach(k => { allLinks.push({ source: d.id, target: k.id, strength: k.size, _childLink: true, _group: d.group }); });
         } else {
@@ -958,7 +971,7 @@ if (DATA.network) {
 
   function render() {
     buildSim();
-    gSim.tick(300);
+    gSim.tick(500);
     gSim.stop();
     const { linkMerge, nodeMerge } = renderDOM();
     linkMerge.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
