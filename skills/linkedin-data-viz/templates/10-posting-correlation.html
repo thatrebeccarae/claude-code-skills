@@ -38,7 +38,7 @@ new Chart(document.getElementById('postingChart').getContext('2d'), {
     labels: DATA.labels,
     datasets: [
       { label: 'New Connections', data: DATA.connections, backgroundColor: '#c9a84ccc', borderRadius: 4, barPercentage: 0.75, order: 2, yAxisID: 'y' },
-      { label: 'Posts', data: DATA.posts, type: 'line', borderColor: '#4eadab', backgroundColor: '#4eadab22', pointBackgroundColor: '#4eadab', pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, tension: 0.3, fill: false, order: 1, yAxisID: 'y1' }
+      { label: 'Posts', data: DATA.posts, type: 'line', borderColor: '#4eadab', backgroundColor: '#4eadab22', pointBackgroundColor: '#4eadab', pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, tension: 0.3, fill: true, order: 1, yAxisID: 'y1' }
     ]
   },
   options: {
@@ -50,7 +50,7 @@ new Chart(document.getElementById('postingChart').getContext('2d'), {
     scales: {
       x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } },
       y: { position: 'left', title: { display: true, text: 'New Connections', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true },
-      y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true, max: 15 }
+      y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590', stepSize: 1 }, beginAtZero: true, max: 14 }
     }
   }
 });

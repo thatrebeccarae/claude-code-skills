@@ -629,7 +629,7 @@ if (DATA.posting) {
       labels: pc.labels,
       datasets: [
         { label: 'New Connections', data: pc.connections, backgroundColor: VIZ.gold + 'cc', borderRadius: 4, barPercentage: 0.75, order: 2, yAxisID: 'y' },
-        { label: 'Posts', data: pc.posts, type: 'line', borderColor: VIZ.teal, backgroundColor: VIZ.teal + '22', pointBackgroundColor: VIZ.teal, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, tension: 0.3, fill: false, order: 1, yAxisID: 'y1' }
+        { label: 'Posts', data: pc.posts, type: 'line', borderColor: VIZ.teal, backgroundColor: VIZ.teal + '22', pointBackgroundColor: VIZ.teal, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, tension: 0.3, fill: true, order: 1, yAxisID: 'y1' }
       ]
     },
     options: {
@@ -641,7 +641,7 @@ if (DATA.posting) {
       scales: {
         x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } },
         y: { position: 'left', title: { display: true, text: 'New Connections', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true },
-        y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true, max: 15 }
+        y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590', stepSize: 1 }, beginAtZero: true, max: 14 }
       }
     }
   });
