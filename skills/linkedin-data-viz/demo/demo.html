@@ -1153,13 +1153,48 @@ if (DATA.quality) {
 /* 07: PYRAMID */
 if (DATA.pyramid) {
   const py = DATA.pyramid;
+  const pyramidLabels = {
+    id: 'pyramidLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      const xCenter = chart.scales.x.getPixelForValue(0);
+      const inMeta = chart.getDatasetMeta(1);
+      const outMeta = chart.getDatasetMeta(0);
+      chart.data.labels.forEach((label, i) => {
+        const bar = inMeta.data[i];
+        const outBar = outMeta.data[i];
+        const inVal = py.inbound[i];
+        const outVal = py.outbound[i];
+        const pct = Math.round(inVal / (inVal + outVal) * 100);
+        /* tier name inside inbound bar */
+        ctx.fillStyle = 'rgba(13,17,23,0.85)';
+        ctx.font = '600 12px Inter';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, xCenter + 10, bar.y);
+        /* inbound count at right end */
+        ctx.fillStyle = '#c9d1d9';
+        ctx.font = '500 11px Inter';
+        ctx.textAlign = 'left';
+        ctx.fillText(inVal, bar.x + 8, bar.y);
+        /* outbound count at left end */
+        ctx.textAlign = 'right';
+        ctx.fillText(outVal, outBar.x - 8, outBar.y);
+        /* inbound % badge at right of inbound count */
+        ctx.fillStyle = '#4eadab88';
+        ctx.font = '400 10px Inter';
+        ctx.textAlign = 'left';
+        ctx.fillText(pct + '% in', bar.x + 8 + ctx.measureText(inVal + '').width + 8, bar.y);
+      });
+    }
+  };
   new Chart(document.getElementById('pyramidChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels: py.tiers,
       datasets: [
-        { label: 'Outbound (you → them)', data: py.outbound.map(v => -v), backgroundColor: VIZ.gold + 'cc', borderRadius: 4, barPercentage: 0.7 },
-        { label: 'Inbound (them → you)', data: py.inbound, backgroundColor: VIZ.teal + 'cc', borderRadius: 4, barPercentage: 0.7 }
+        { label: 'Outbound (you → them)', data: py.outbound.map(v => -v), backgroundColor: VIZ.gold + 'cc', borderRadius: 4, barPercentage: 0.82, categoryPercentage: 0.75 },
+        { label: 'Inbound (them → you)', data: py.inbound, backgroundColor: VIZ.teal + 'cc', borderRadius: 4, barPercentage: 0.82, categoryPercentage: 0.75 }
       ]
     },
     options: {
@@ -1170,16 +1205,19 @@ if (DATA.pyramid) {
       },
       scales: {
         x: {
+          stacked: true,
           grid: { color: 'rgba(255,255,255,0.06)' },
           ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590', callback: v => Math.abs(v) },
           title: { display: true, text: 'Connections', color: '#7d8590', font: { family: 'Inter', size: 11 } }
         },
         y: {
+          stacked: true,
           grid: { display: false },
-          ticks: { font: { family: 'Inter', size: 12, weight: '500' }, color: '#c9d1d9' }
+          ticks: { display: false }
         }
       }
-    }
+    },
+    plugins: [pyramidLabels]
   });
   renderStats('pyramid-stats', py.stats || []);
 }
