@@ -719,12 +719,12 @@ const DATA = {
   posting: {
     chart_title: "r = 0.73 — Posting drives connection growth",
     labels: ["Nov '23","Dec '23","Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26"],
-    connections: [5, 4, 8, 5, 7, 9, 4, 10, 7, 6, 8, 6, 9, 6, 39, 49, 25, 72, 79, 96, 106, 122, 116, 94, 129, 122, 140],
-    posts: [1, 1, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 1, 3, 3, 2, 4, 4, 5, 5, 6, 6, 5, 6, 6, 6],
+    connections: [4, 3, 6, 4, 5, 7, 3, 8, 5, 4, 6, 4, 7, 4, 41, 52, 27, 76, 84, 101, 112, 129, 123, 100, 137, 129, 145],
+    posts: [2, 1, 3, 2, 1, 3, 2, 2, 3, 1, 2, 3, 2, 1, 3, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6],
     highlights: [
       { value: "0.73", label: "correlation coefficient", note: "(that's strong)" },
       { value: "1833%", label: "more connections/month", note: "after consistent posting" },
-      { value: "5 → 100", label: "avg connections/month", note: "before vs after" }
+      { value: "5 → 97", label: "avg connections/month", note: "before vs after" }
     ],
     prompt: {
       text: "\"Is there a correlation between posting frequency and new connections? Compare my Shares.csv (posts) with Connections.csv (connection dates) by month. Calculate the correlation coefficient and visualize both on a chart.\"",
@@ -1225,7 +1225,7 @@ if (DATA.posting) {
       scales: {
         x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 9 }, color: '#7d8590', maxRotation: 45 } },
         y: { position: 'left', title: { display: true, text: 'New Connections', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true },
-        y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true }
+        y1: { position: 'right', title: { display: true, text: 'Posts', color: '#7d8590', font: { family: 'Inter', size: 11 } }, grid: { drawOnChartArea: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#7d8590' }, beginAtZero: true, max: 15 }
       }
     }
   });
