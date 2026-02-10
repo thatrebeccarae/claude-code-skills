@@ -311,46 +311,63 @@ if (DATA.network) {
   const linkLayer = gsvg.append('g');
   const nodeLayer = gsvg.append('g');
   let gSim;
+  const gcx=gw/2, gcy=gh/2;
 
-  function restart() {
-    const linkSel = linkLayer.selectAll('line').data(allLinks, d => (d.source.id||d.source)+'-'+(d.target.id||d.target));
-    linkSel.exit().transition().duration(200).attr('stroke-opacity',0).remove();
-    const linkEnter = linkSel.enter().append('line').attr('class','graph-link').attr('stroke-opacity',0);
-    const linkMerge = linkEnter.merge(linkSel);
-    linkMerge.transition().duration(200).attr('stroke-width',d=>lw(d)).attr('stroke-opacity',d=>lo(d)).attr('stroke',d=>{if(d._youLink)return'rgba(255,255,255,0.4)';if(d._childLink)return PALETTE[d._group%PALETTE.length];return'rgba(255,255,255,0.25)';});
+  /* Pre-position nodes radially */
+  youNode.x=gcx;youNode.y=gcy;youNode.fx=gcx;youNode.fy=gcy;
+  const gorbitR=Math.min(gw,gh)*0.35;
+  parentNodes.forEach((p,i)=>{const a=(i/parentNodes.length)*2*Math.PI-Math.PI/2;p.x=gcx+Math.cos(a)*(gorbitR+nodeRadius(p)*0.5);p.y=gcy+Math.sin(a)*(gorbitR+nodeRadius(p)*0.5);});
+  allNodes.filter(n=>n._depth===1).forEach(child=>{
+    const parent=parentNodes.find(n=>n.id===child._parent);if(!parent)return;
+    const siblings=allNodes.filter(n=>n._parent===child._parent&&n._depth===1);const idx=siblings.indexOf(child);
+    const pAngle=Math.atan2(parent.y-gcy,parent.x-gcx);const count=siblings.length;
+    const spread=Math.min(Math.PI*0.8,count*0.45);const startA=pAngle-spread/2;
+    const cAngle=count>1?startA+(idx/(count-1))*spread:pAngle;
+    const dist=nodeRadius(parent)+25+nodeRadius(child)*2;
+    child.x=parent.x+Math.cos(cAngle)*dist;child.y=parent.y+Math.sin(cAngle)*dist;
+  });
 
-    const nodeSel = nodeLayer.selectAll('g.node').data(allNodes, d => d.id);
-    nodeSel.exit().transition().duration(200).attr('opacity',0).remove();
-    const nodeEnter = nodeSel.enter().append('g').attr('class','node').attr('opacity',0)
+  function buildGSim(){
+    if(gSim)gSim.stop();
+    gSim=d3.forceSimulation(allNodes).velocityDecay(0.7).alphaDecay(0.06)
+      .force('link',d3.forceLink(allLinks).id(d=>d.id).distance(d=>{if(d._youLink)return 250+nodeRadius(d.target)*1.5;if(d._childLink)return 20+nodeRadius(d.target)*2.5;return 500;}).strength(d=>{if(d._childLink)return 1.0;if(d._youLink)return 0.25;return 0.01;}))
+      .force('charge',d3.forceManyBody().strength(d=>{if(d._depth===-1)return-2000;if(d._depth===0)return-1200;if(d._depth===1)return-25;return-10;}))
+      .force('center',d3.forceCenter(gcx,gcy).strength(0.01))
+      .force('collision',d3.forceCollide().radius(d=>{if(d._depth===-1)return youRadius+30;if(d._depth===0)return nodeRadius(d)+50;return nodeRadius(d)+8;}).strength(1.0));
+    youNode.fx=gcx;youNode.fy=gcy;return gSim;
+  }
+
+  function renderGDOM(){
+    const linkSel=linkLayer.selectAll('line').data(allLinks,d=>(d.source.id||d.source)+'-'+(d.target.id||d.target));
+    linkSel.exit().remove();const linkEnter=linkSel.enter().append('line').attr('class','graph-link');const linkMerge=linkEnter.merge(linkSel);
+    linkMerge.attr('stroke-width',d=>lw(d)).attr('stroke-opacity',d=>lo(d)).attr('stroke',d=>{if(d._youLink)return'rgba(255,255,255,0.4)';if(d._childLink)return PALETTE[d._group%PALETTE.length];return'rgba(255,255,255,0.25)';});
+    const nodeSel=nodeLayer.selectAll('g.node').data(allNodes,d=>d.id);nodeSel.exit().remove();
+    const nodeEnter=nodeSel.enter().append('g').attr('class','node')
       .call(d3.drag().on('start',(e,d)=>{if(d._depth===-1)return;if(!e.active)gSim.alphaTarget(0.03).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{if(d._depth===-1)return;d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(d._depth===-1)return;if(!e.active)gSim.alphaTarget(0);d.fx=null;d.fy=null}));
-    nodeEnter.append('circle'); nodeEnter.append('text').attr('class','node-label').attr('text-anchor','middle'); nodeEnter.append('text').attr('class','node-count').attr('text-anchor','middle');
-
-    const nodeMerge = nodeEnter.merge(nodeSel);
-    nodeMerge.transition().duration(200).attr('opacity',1);
+    nodeEnter.append('circle');nodeEnter.append('text').attr('class','node-label').attr('text-anchor','middle');nodeEnter.append('text').attr('class','node-count').attr('text-anchor','middle');
+    const nodeMerge=nodeEnter.merge(nodeSel);nodeMerge.attr('opacity',1);
     nodeMerge.select('circle').attr('r',d=>nodeRadius(d)).attr('fill',d=>d._depth===-1?'#fdfdfe':PALETTE[d.group%PALETTE.length]).attr('fill-opacity',d=>d._depth===-1?0.95:d._depth===0?1.0:d._depth===1?0.85:0.7).attr('stroke',d=>d._depth===-1?'rgba(255,255,255,0.3)':PALETTE[d.group%PALETTE.length]).attr('stroke-width',d=>d._depth<=0?2:1).attr('stroke-opacity',0.9).style('cursor',d=>d._depth>=1?'pointer':'default');
     nodeMerge.select('.node-label').attr('dy',d=>d._depth>=1?'0.35em':'-0.3em').style('font-size',d=>d._depth===-1?'13px':d._depth>=2?'7px':d._depth===1?'9px':'11px').style('fill',d=>d._depth===-1?'var(--bg-primary)':'').style('font-weight',d=>d._depth===-1?'600':'').text(d=>nodeRadius(d)<12?'':d.id);
     nodeMerge.select('.node-count').attr('dy','1em').style('font-size',d=>d._depth>=2?'6px':d._depth===1?'8px':'10px').style('fill',d=>d._depth===-1?'var(--bg-primary)':'').text(d=>d._depth===-1?'':nodeRadius(d)<12?'':d.size);
-
-    /* Tooltip on click for child nodes only */
     nodeMerge.on('click',(e,d)=>{
       e.stopPropagation();
       if(d._depth>=1){const info=d.top_companies&&d.top_companies.length?`<div class="companies">Top: ${d.top_companies.join(', ')}</div>`:d._parent?`<div class="companies">Cluster: ${d._parent}</div>`:'';gTip.innerHTML=`<strong>${d.id}</strong><br>${d.size} connections${info}`;gTip.style.opacity=1;gTip.style.left=(e.offsetX+15)+'px';gTip.style.top=(e.offsetY-10)+'px';}
       if(childMap.has(d.id)&&d._depth>=1){d._expanded=!d._expanded;
-        if(d._expanded){const kids=childMap.get(d.id);kids.forEach(k=>{k.x=d.x+(Math.random()-0.5)*30;k.y=d.y+(Math.random()-0.5)*30});allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:k.size,_childLink:true,_group:d.group})})}
+        if(d._expanded){const kids=childMap.get(d.id);const pA=Math.atan2(d.y-gcy,d.x-gcx);kids.forEach((k,ki)=>{const a=pA-0.4+(ki/Math.max(kids.length-1,1))*0.8;k.x=d.x+Math.cos(a)*(nodeRadius(d)+25);k.y=d.y+Math.sin(a)*(nodeRadius(d)+25)});allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:k.size,_childLink:true,_group:d.group})})}
         else{const descIds=getDescendantIds(d.id);allNodes=allNodes.filter(n=>!descIds.has(n.id));allLinks=allLinks.filter(l=>{if(!l._childLink)return true;const sid=l.source.id||l.source;const tid=l.target.id||l.target;return!descIds.has(tid)&&!descIds.has(sid)})}
         restart();}
     });
     gsvg.on('click',()=>{gTip.style.opacity=0});
+    return{linkMerge,nodeMerge};
+  }
 
-    if(gSim)gSim.stop();
-    gSim = d3.forceSimulation(allNodes).velocityDecay(0.7).alphaDecay(0.06)
-      .force('link',d3.forceLink(allLinks).id(d=>d.id).distance(d=>{if(d._youLink)return 220+nodeRadius(d.target)*1.5;if(d._childLink)return 20+nodeRadius(d.target)*2;return 400;}).strength(d=>{if(d._childLink)return 0.9;if(d._youLink)return 0.3;return 0.02;}))
-      .force('charge',d3.forceManyBody().strength(d=>{if(d._depth===-1)return-1500;if(d._depth===0)return-900;if(d._depth===1)return-30;return-10;}))
-      .force('center',d3.forceCenter(gw/2,gh/2).strength(0.015))
-      .force('collision',d3.forceCollide().radius(d=>{if(d._depth===-1)return youRadius+25;if(d._depth===0)return nodeRadius(d)+40;return nodeRadius(d)+6;}).strength(1.0))
-      .on('tick',()=>{linkMerge.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nodeMerge.attr('transform',d=>`translate(${d.x},${d.y})`)});
-    youNode.fx=gw/2;youNode.fy=gh/2;
-    gSim.alpha(0.3).restart();
+  function restart(){
+    buildGSim();gSim.alpha(0.5);for(let i=0;i<400;i++)gSim.tick();
+    const{linkMerge,nodeMerge}=renderGDOM();
+    linkMerge.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    nodeMerge.attr('transform',d=>`translate(${d.x},${d.y})`);
+    gSim.on('tick',()=>{linkMerge.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nodeMerge.attr('transform',d=>`translate(${d.x},${d.y})`)});
+    gSim.alpha(0).restart();
   }
   restart();
 
