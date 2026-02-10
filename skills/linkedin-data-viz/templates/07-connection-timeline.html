@@ -35,7 +35,7 @@ document.getElementById('subtitle').textContent = DATA.subtitle || '';
 const tr = document.getElementById('timeline-rows');
 if (DATA.rows) {
   tr.innerHTML = DATA.rows.map(r => {
-    const bar = r.msg_count > 0 ? `<div class="msg-bar" style="width:${Math.min(70, r.msg_count * 4)}px;${r.msg_count > 8 ? 'background:#FFD700;' : ''}"></div>` : '';
+    const bar = r.msg_count > 0 ? `<div class="msg-bar" style="width:${Math.min(70, r.msg_count * 4)}px;${r.msg_count > 8 ? 'background:#c9a84c;' : ''}"></div>` : '';
     return `<div class="tl-row"><div class="direction-dot ${r.direction}"></div><div class="tl-name">${r.name}</div><div class="tl-company">${r.company}</div><div class="tl-date">${r.date}</div><div class="tl-msgs">${bar}<div class="msg-count">${r.msg_count}</div></div></div>`;
   }).join('');
 }

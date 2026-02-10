@@ -25,15 +25,15 @@
 
   /* Visualization Palette */
   --viz-teal:    #4eadab;
-  --viz-lime:    #39FF14;
+  --viz-lime:    #56d4a5;
   --viz-cyan:    #6bc0be;
-  --viz-purple:  #A855F7;
-  --viz-orange:  #FF5F1F;
-  --viz-gold:    #FFD700;
+  --viz-purple:  #8b7ec8;
+  --viz-orange:  #d4845a;
+  --viz-gold:    #c9a84c;
   --viz-muted:   #8b949e;
   --viz-deep:    #4a9f9d;
   --viz-slate:   #7d8590;
-  --viz-pink:    #FF2D55;
+  --viz-pink:    #c75b6f;
 
   /* Borders */
   --border-subtle:   rgba(255, 255, 255, 0.08);
@@ -467,12 +467,12 @@ section:nth-child(even of section) {
 }
 
 .verdict.partial {
-  background: rgba(255, 215, 0, 0.12);
+  background: rgba(201, 168, 76, 0.12);
   color: var(--viz-gold);
 }
 
 .verdict.wrong {
-  background: rgba(255, 45, 85, 0.12);
+  background: rgba(199, 91, 111, 0.12);
   color: var(--viz-pink);
 }
 
@@ -548,8 +548,8 @@ section:nth-child(even of section) {
 }
 
 .tag.irrelevant {
-  background: rgba(255, 45, 85, 0.08);
-  border-color: rgba(255, 45, 85, 0.15);
+  background: rgba(199, 91, 111, 0.08);
+  border-color: rgba(199, 91, 111, 0.15);
   color: var(--viz-pink);
 }
 
@@ -700,7 +700,7 @@ section:nth-child(even of section) {
 }
 
 .msg-days.urgent {
-  background: rgba(255, 215, 0, 0.12);
+  background: rgba(201, 168, 76, 0.12);
   color: var(--viz-gold);
 }
 
@@ -744,8 +744,8 @@ section:nth-child(even of section) {
 }
 
 .msg-tag.opportunity {
-  background: rgba(255, 215, 0, 0.08);
-  border-color: rgba(255, 215, 0, 0.15);
+  background: rgba(201, 168, 76, 0.08);
+  border-color: rgba(201, 168, 76, 0.15);
   color: var(--viz-gold);
 }
 
@@ -756,8 +756,8 @@ section:nth-child(even of section) {
 }
 
 .msg-tag.network {
-  background: rgba(168, 85, 247, 0.08);
-  border-color: rgba(168, 85, 247, 0.15);
+  background: rgba(139, 126, 200, 0.08);
+  border-color: rgba(139, 126, 200, 0.15);
   color: var(--viz-purple);
 }
 
@@ -1089,13 +1089,13 @@ section:nth-child(even of section) {
 /*
   Primary palette for charts and visualizations:
   #4eadab  — Teal (primary accent)
-  #39FF14  — Lime (excellent/highlight)
+  #56d4a5  — Seafoam (highlight/excellent)
   #6bc0be  — Light Teal (hover/secondary)
-  #A855F7  — Purple (applied/special)
-  #FF5F1F  — Orange (warning/marginal)
-  #FFD700  — Gold (offer/important)
+  #8b7ec8  — Lavender (applied/special)
+  #d4845a  — Terracotta (warning/marginal)
+  #c9a84c  — Amber (offer/important)
   #8b949e  — Muted Gray (neutral)
   #4a9f9d  — Deep Teal (variant)
   #7d8590  — Slate (muted variant)
-  #FF2D55  — Pink (error/rejected)
+  #c75b6f  — Dusty Rose (error/rejected)
 */

@@ -662,15 +662,15 @@ All visual styling is controlled via CSS custom properties in the `:root` select
 ```css
 :root {
   --viz-teal:    #4eadab;  /* Primary chart color */
-  --viz-lime:    #39FF14;  /* Highlight/excellent */
+  --viz-lime:    #56d4a5;  /* Seafoam — highlight/excellent */
   --viz-cyan:    #6bc0be;  /* Secondary chart color */
-  --viz-purple:  #A855F7;  /* Tertiary/special */
-  --viz-orange:  #FF5F1F;  /* Warning/marginal */
-  --viz-gold:    #FFD700;  /* Important/offer */
+  --viz-purple:  #8b7ec8;  /* Lavender — tertiary/special */
+  --viz-orange:  #d4845a;  /* Terracotta — warning/marginal */
+  --viz-gold:    #c9a84c;  /* Amber — important/offer */
   --viz-muted:   #8b949e;  /* Neutral data */
   --viz-deep:    #4a9f9d;  /* Deep variant */
   --viz-slate:   #7d8590;  /* Muted variant */
-  --viz-pink:    #FF2D55;  /* Error/rejected */
+  --viz-pink:    #c75b6f;  /* Dusty Rose — error/rejected */
 }
 ```
 
