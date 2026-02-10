@@ -38,6 +38,11 @@ const w = gc.clientWidth, h = 800;
 const svg = d3.select('#graph').append('svg').attr('viewBox', `0 0 ${w} ${h}`).attr('preserveAspectRatio', 'xMidYMid meet');
 const tip = document.getElementById('tooltip');
 
+/* Zoom/pan container — all drawing goes inside zoomG */
+const zoomG = svg.append('g');
+const zoom = d3.zoom().scaleExtent([0.3, 3]).on('zoom', (e) => { zoomG.attr('transform', e.transform); });
+svg.call(zoom);
+
 /* Build parent nodes + recursive child map */
 const parentNodes = DATA.nodes.map(n => ({ ...n, _depth: 0, _expanded: true }));
 let allNodes = [];
@@ -58,6 +63,7 @@ buildChildMap(DATA.nodes, 0);
 /* "You" central node */
 const youNode = { id: 'You', size: DATA.totalConnections || 1847, group: -1, _depth: -1, _expanded: true };
 const maxPS = d3.max(parentNodes, d => d.size);
+const minPS = d3.min(parentNodes, d => d.size);
 allNodes.push(youNode);
 allNodes = allNodes.concat(parentNodes);
 
@@ -74,26 +80,30 @@ parentNodes.forEach(p => {
   }
 });
 
-/* Radius scales */
-const youR = 50;
-const depthScales = [
-  d3.scaleSqrt().domain([0, maxPS]).range([28, 65]),
-  d3.scaleSqrt().domain([0, 120]).range([8, 22]),
-  d3.scaleSqrt().domain([0, 50]).range([4, 14])
-];
-function nr(d) { return d._depth === -1 ? youR : depthScales[Math.min(d._depth, 2)](d.size); }
+/* Radius scales — wide ranges for clear visual hierarchy */
+const youR = 55;
+const parentRadiusScale = d3.scalePow().exponent(0.5).domain([minPS, maxPS]).range([22, 72]);
+const child1Scale = d3.scalePow().exponent(0.5).domain([0, d3.max(allNodes.filter(n=>n._depth===1),d=>d.size)||120]).range([6, 26]);
+const child2Scale = d3.scalePow().exponent(0.5).domain([0, 50]).range([3, 14]);
+function nr(d) {
+  if (d._depth === -1) return youR;
+  if (d._depth === 0) return parentRadiusScale(d.size);
+  if (d._depth === 1) return child1Scale(d.size);
+  return child2Scale(d.size);
+}
 
 /* Link weight scales */
+const youLinkScale = d3.scaleLinear().domain([minPS, maxPS]).range([1.5, 6]);
 const maxCS = d3.max(DATA.links, d => d.strength) || 22;
 function lw(d) {
-  if (d._youLink) return Math.max(1.5, (d.strength / maxPS) * 8);
-  if (d._childLink) return Math.max(1.5, (d.strength / 120) * 3.5);
-  return Math.max(1, (d.strength || 4) / maxCS * 4);
+  if (d._youLink) return youLinkScale(d.strength);
+  if (d._childLink) return Math.max(1, (d.strength / 120) * 3);
+  return Math.max(0.8, (d.strength || 4) / maxCS * 2.5);
 }
 function lo(d) {
-  if (d._youLink) return Math.max(0.2, (d.strength / maxPS) * 0.65);
-  if (d._childLink) return Math.max(0.4, (d.strength / 120) * 0.7);
-  return Math.max(0.2, (d.strength || 4) / maxCS * 0.5);
+  if (d._youLink) return 0.35;
+  if (d._childLink) return Math.max(0.35, (d.strength / 120) * 0.6);
+  return 0.18;
 }
 
 function getDescendantIds(nodeId) {
@@ -104,46 +114,94 @@ function getDescendantIds(nodeId) {
   return ids;
 }
 
-const linkLayer = svg.append('g');
-const nodeLayer = svg.append('g');
+const linkLayer = zoomG.append('g');
+const nodeLayer = zoomG.append('g');
 let sim;
 const cx=w/2, cy=h/2;
 
-/* Force-directed, pre-settled before render */
-youNode.x=cx;youNode.y=cy;youNode.fx=cx;youNode.fy=cy;
-parentNodes.forEach((p,i)=>{const a=(i/parentNodes.length)*2*Math.PI-Math.PI/2+(Math.random()-0.5)*0.8;const r=120+Math.sqrt(p.size)*4+(Math.random()-0.5)*60;p.x=cx+Math.cos(a)*r;p.y=cy+Math.sin(a)*r;});
-/* Seed children on outward side of parent (away from You) */
-allNodes.forEach(d=>{if(d._depth>=1&&d._parent){const par=allNodes.find(n=>n.id===d._parent);if(par&&par.x!=null){const dx=par.x-cx,dy=par.y-cy,dist=Math.sqrt(dx*dx+dy*dy)||1;d.x=par.x+(dx/dist)*25+(Math.random()-0.5)*20;d.y=par.y+(dy/dist)*25+(Math.random()-0.5)*20;}}});
+/* Radial distance: more connections = closer to You */
+const distScale = d3.scaleLinear().domain([maxPS, minPS]).range([130, 240]);
+
+/* Seed positions — You starts at center (no fx/fy lock) */
+youNode.x=cx;youNode.y=cy;
+parentNodes.forEach((p,i)=>{
+  const a=(i/parentNodes.length)*2*Math.PI-Math.PI/2;
+  const r=distScale(p.size);
+  p.x=cx+Math.cos(a)*r;
+  p.y=cy+Math.sin(a)*r;
+});
+
+/* Seed children in fan arc radiating outward from parent */
+allNodes.forEach(d=>{if(d._depth>=1&&d._parent){const par=allNodes.find(n=>n.id===d._parent);if(par&&par.x!=null){
+  const siblings=childMap.get(d._parent)||[];const idx=siblings.indexOf(d);const count=siblings.length;
+  const pAngle=Math.atan2(par.y-cy,par.x-cx);
+  const fanSpread=Math.min(Math.PI*0.6,count*0.25);
+  const childAngle=pAngle-fanSpread/2+(count>1?idx/(count-1)*fanSpread:0);
+  const childDist=nr(par)+nr(d)+20;
+  d.x=par.x+Math.cos(childAngle)*childDist;
+  d.y=par.y+Math.sin(childAngle)*childDist;
+}}});
 
 function buildSim(){
   if(sim)sim.stop();
   sim=d3.forceSimulation(allNodes)
     .force('link',d3.forceLink(allLinks).id(d=>d.id)
-      .distance(d=>{if(d._youLink)return 100+Math.sqrt(d.strength)*10;if(d._childLink)return nr(d.source)+nr(d.target)+20;return 160;})
-      .strength(d=>{if(d._youLink)return 0.2;if(d._childLink)return 0.7;return 0.15;}))
-    .force('charge',d3.forceManyBody().strength(d=>{if(d._depth===-1)return-1500;if(d._depth===0)return-600-d.size*0.8;return-60;}))
+      .distance(d=>{if(d._youLink)return distScale(d.strength);if(d._childLink)return nr(d.source)+nr(d.target)+20;return 220;})
+      .strength(d=>{if(d._youLink)return 0.25;if(d._childLink)return 0.7;return 0.02;}))
+    .force('charge',d3.forceManyBody().strength(d=>{if(d._depth===-1)return-1800;if(d._depth===0)return-500-d.size*0.8;return-30;}))
     .force('center',d3.forceCenter(cx,cy).strength(0.03))
+    .force('radial',d3.forceRadial(d=>d._depth===0?distScale(d.size):0,cx,cy).strength(d=>d._depth===0?0.5:0))
     .force('collision',d3.forceCollide().radius(d=>nr(d)+8).strength(0.9));
-  youNode.fx=cx;youNode.fy=cy;return sim;
+  return sim;
 }
 
 function renderDOM(){
   const lSel=linkLayer.selectAll('line').data(allLinks,d=>(d.source.id||d.source)+'-'+(d.target.id||d.target));
   lSel.exit().remove();const lE=lSel.enter().append('line').attr('class','graph-link');const lM=lE.merge(lSel);
-  lM.attr('stroke-width',d=>lw(d)).attr('stroke-opacity',d=>lo(d)).attr('stroke',d=>{if(d._youLink)return'rgba(255,255,255,0.4)';if(d._childLink)return PALETTE[d._group%PALETTE.length];return'rgba(255,255,255,0.25)';});
+  lM.attr('stroke-width',d=>lw(d))
+    .attr('stroke-opacity',d=>lo(d))
+    .attr('stroke',d=>{
+      if(d._youLink)return'rgba(255,255,255,0.5)';
+      if(d._childLink)return PALETTE[d._group%PALETTE.length];
+      return'rgba(255,255,255,0.2)';
+    })
+    .attr('stroke-dasharray',d=>(!d._youLink&&!d._childLink)?'5,4':null);
+
   const nSel=nodeLayer.selectAll('g.node').data(allNodes,d=>d.id);nSel.exit().remove();
-  const nE=nSel.enter().append('g').attr('class','node')
-    .call(d3.drag().on('start',(e,d)=>{if(d._depth===-1)return;if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{if(d._depth===-1)return;d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(d._depth===-1)return;if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
-  nE.append('circle');nE.append('text').attr('class','node-label').attr('text-anchor','middle');nE.append('text').attr('class','node-count').attr('text-anchor','middle');
-  const nM=nE.merge(nSel);nM.attr('opacity',1);
-  nM.select('circle').attr('r',d=>nr(d)).attr('fill',d=>d._depth===-1?'#fdfdfe':PALETTE[d.group%PALETTE.length]).attr('fill-opacity',d=>d._depth===-1?0.95:d._depth===0?1.0:d._depth===1?0.85:0.7).attr('stroke',d=>d._depth===-1?'rgba(255,255,255,0.3)':PALETTE[d.group%PALETTE.length]).attr('stroke-width',d=>d._depth<=0?2:1).attr('stroke-opacity',0.9).style('cursor',d=>d._depth>=1?'pointer':'default');
-  nM.select('.node-label').attr('dy',d=>d._depth>=1?'0.35em':'-0.3em').style('font-size',d=>d._depth===-1?'13px':d._depth>=2?'7px':d._depth===1?'9px':'11px').style('fill',d=>d._depth===-1?'var(--bg-primary)':'').style('font-weight',d=>d._depth===-1?'600':'').text(d=>nr(d)<12?'':d.id);
-  nM.select('.node-count').attr('dy','1em').style('font-size',d=>d._depth>=2?'6px':d._depth===1?'8px':'10px').style('fill',d=>d._depth===-1?'var(--bg-primary)':'').text(d=>d._depth===-1?'':nr(d)<12?'':d.size);
+  const dragHandler=d3.drag()
+    .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+    .on('drag',(e,d)=>{const t=d3.zoomTransform(svg.node());d.fx=(e.sourceEvent.offsetX-t.x)/t.k;d.fy=(e.sourceEvent.offsetY-t.y)/t.k;})
+    .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;});
+  const nE=nSel.enter().append('g').attr('class','node').call(dragHandler);
+  nE.append('circle');nE.append('text').attr('class','node-label').attr('text-anchor','middle');
+  const nM=nE.merge(nSel);
+  nM.selectAll('.node-count').remove();
+  nM.attr('opacity',1);
+
+  nM.select('circle')
+    .attr('r',d=>nr(d))
+    .attr('fill',d=>d._depth===-1?'#fdfdfe':PALETTE[d.group%PALETTE.length])
+    .attr('fill-opacity',d=>d._depth===-1?0.95:d._depth===0?1.0:d._depth===1?0.75:0.6)
+    .attr('stroke','none')
+    .style('cursor','pointer');
+
+  /* Labels: all centered inside nodes */
+  nM.select('.node-label')
+    .attr('dy','0.35em')
+    .attr('text-anchor','middle')
+    .style('font-size',d=>d._depth===-1?'13px':d._depth===0?'11px':d._depth===1?'8px':'7px')
+    .style('fill',d=>d._depth===-1?'var(--bg-primary)':'#fff')
+    .style('font-weight',d=>d._depth<=0?'600':'500')
+    .text(d=>nr(d)<10?'':d.id);
+
   nM.on('click',(e,d)=>{
     e.stopPropagation();
     if(d._depth>=1){const info=d.top_companies&&d.top_companies.length?`<div class="companies">Top: ${d.top_companies.join(', ')}</div>`:d._parent?`<div class="companies">Cluster: ${d._parent}</div>`:'';tip.innerHTML=`<strong>${d.id}</strong><br>${d.size} connections${info}`;tip.style.opacity=1;tip.style.left=(e.offsetX+15)+'px';tip.style.top=(e.offsetY-10)+'px';}
     if(childMap.has(d.id)&&d._depth>=1){d._expanded=!d._expanded;
-      if(d._expanded){const kids=childMap.get(d.id);const ddx=d.x-cx,ddy=d.y-cy,ddist=Math.sqrt(ddx*ddx+ddy*ddy)||1;kids.forEach(k=>{k.x=d.x+(ddx/ddist)*25+(Math.random()-0.5)*20;k.y=d.y+(ddy/ddist)*25+(Math.random()-0.5)*20});allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:k.size,_childLink:true,_group:d.group})})}
+      if(d._expanded){const kids=childMap.get(d.id);
+        const pAngle=Math.atan2(d.y-cy,d.x-cx);const count=kids.length;const fanSpread=Math.min(Math.PI*0.6,count*0.25);
+        kids.forEach((k,ki)=>{const childAngle=pAngle-fanSpread/2+(count>1?ki/(count-1)*fanSpread:0);const childDist=nr(d)+nr(k)+20;k.x=d.x+Math.cos(childAngle)*childDist;k.y=d.y+Math.sin(childAngle)*childDist;});
+        allNodes=allNodes.concat(kids);kids.forEach(k=>{allLinks.push({source:d.id,target:k.id,strength:k.size,_childLink:true,_group:d.group})})}
       else{const descIds=getDescendantIds(d.id);allNodes=allNodes.filter(n=>!descIds.has(n.id));allLinks=allLinks.filter(l=>{if(!l._childLink)return true;const sid=l.source.id||l.source;const tid=l.target.id||l.target;return!descIds.has(tid)&&!descIds.has(sid)})}
       render();}
   });
@@ -152,11 +210,14 @@ function renderDOM(){
 }
 
 function render(){
-  buildSim();sim.tick(500);sim.stop();
+  buildSim();sim.tick(400);sim.stop();
   const{lM,nM}=renderDOM();
   lM.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
   nM.attr('transform',d=>`translate(${d.x},${d.y})`);
-  sim.on('tick',()=>{lM.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nM.attr('transform',d=>`translate(${d.x},${d.y})`)});
+  sim.on('tick',()=>{
+    lM.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    nM.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
   sim.alpha(0).restart();
 }
 render();
