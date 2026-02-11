@@ -216,6 +216,75 @@ section:nth-child(even of section){background:var(--bg-surface)}
 /* Demo banner */
 .demo-banner{background:rgba(78,173,171,0.1);border-bottom:1px solid rgba(78,173,171,0.2);padding:10px 40px;text-align:center;font-size:0.82rem;color:var(--accent-primary)}
 .demo-banner a{color:var(--text-primary);font-weight:600;text-decoration:none;border-bottom:1px solid var(--accent-primary)}
+
+/* ============================================================
+   Mobile Responsive
+   ============================================================ */
+@media(max-width:768px){
+  .container{padding:0 20px}
+  .nav{padding:0 16px}
+  .hero{padding:48px 20px 36px}
+  .hero h1{font-size:2rem}
+  .hero .lead{font-size:0.92rem}
+  .hero-stats{gap:20px}
+  .stat-value{font-size:1.4rem}
+  section{padding:40px 20px}
+  .section-title{font-size:1.6rem}
+  .section-subtitle{font-size:0.88rem}
+  #graph{height:480px}
+  .chart-box{height:300px}
+  .stats-row{gap:16px}
+  .comparison-row{grid-template-columns:1fr;gap:6px;text-align:left}
+  .col-linkedin{text-align:left}
+  .vs-divider{padding:0;font-size:0.6rem}
+  .strata-layer{padding:16px 18px}
+  .strata-count{font-size:1.4rem}
+  .strata-era{font-size:0.82rem}
+  .highlight-value{font-size:1.8rem}
+  .footer{padding:36px 20px}
+  .demo-banner{padding:10px 16px;font-size:0.78rem}
+  .prompt-box{padding:20px}
+  .prompt-text{padding:12px 14px;font-size:0.85rem}
+  .msg-card{padding:14px 16px;gap:12px}
+}
+@media(max-width:480px){
+  .container{padding:0 16px}
+  .nav{padding:0 12px}
+  .nav-brand{font-size:0.78rem;margin-right:8px}
+  .nav-link{padding:5px 10px;font-size:0.7rem}
+  .hero{padding:36px 16px 28px}
+  .hero h1{font-size:1.6rem}
+  .hero .lead{font-size:0.85rem;margin-bottom:24px}
+  .hero-stats{gap:12px}
+  .stat-value{font-size:1.2rem}
+  .stat-label{font-size:0.62rem}
+  section{padding:28px 16px}
+  .section-num{font-size:0.62rem}
+  .section-title{font-size:1.35rem}
+  .section-subtitle{font-size:0.82rem;margin-bottom:20px}
+  #graph{height:360px}
+  .chart-box{height:260px}
+  .card{padding:18px}
+  .stats-row{gap:10px}
+  .strata-layer{padding:14px 14px;flex-direction:column;align-items:flex-start;gap:8px}
+  .strata-right{text-align:left;margin-left:0;display:flex;gap:8px;align-items:baseline}
+  .strata-count{font-size:1.2rem}
+  .strata-pct{font-size:0.62rem}
+  .strata-desc{font-size:0.75rem}
+  .strata-era{font-size:0.78rem}
+  .highlight-value{font-size:1.5rem}
+  .highlight-card{padding:18px}
+  .highlight-label{font-size:0.78rem}
+  .cluster-grid{grid-template-columns:1fr}
+  .follows-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+  .msg-card{flex-direction:column;gap:8px}
+  .urgency{width:100%;min-height:4px;height:4px}
+  .footer{padding:24px 16px}
+  .demo-banner{padding:8px 12px;font-size:0.75rem}
+  .inference-card{padding:14px}
+  .breakdown-bar{flex:0 0 60px}
+  .tl-header,.tl-row{padding:8px 12px}
+}
 </style>
 </head>
 <body>
@@ -788,7 +857,7 @@ if (DATA.network) {
   renderStats('network-stats', nd.stats || []);
 
   const gc = document.getElementById('graph');
-  const gw = gc.clientWidth, gh = 800;
+  const gw = gc.clientWidth, gh = gc.clientHeight || 800;
   const gsvg = d3.select('#graph').append('svg').attr('viewBox', `0 0 ${gw} ${gh}`).attr('preserveAspectRatio', 'xMidYMid meet');
   const gTip = document.getElementById('tooltip');
 
