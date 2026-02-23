@@ -2,7 +2,7 @@
 
 # dgtl dept*
 
-**Production-tested skill packs that give Claude Code deep expertise in DTC marketing, data visualization, and presentation generation.**
+**A full marketing department for Claude Code.** Klaviyo, Shopify, GA4, Looker Studio, paid media, content strategy — install the skills you need and get expert-level analysis from your terminal.
 
 [![Substack](https://img.shields.io/badge/Substack-dgtl%20dept*-5865F2?style=for-the-badge&logo=substack&logoColor=white)](https://dgtldept.substack.com/welcome)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Rebecca%20Rae%20Barton-007EC6?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/rebeccaraebarton)
@@ -27,7 +27,7 @@ git clone https://github.com/thatrebeccarae/dgtldept.git
 <br>
 
 <a href="https://thatrebeccarae.github.io/dgtldept/skill-packs/dtc-skill-pack/demo/">
-  <img src="assets/terminal.svg" alt="DTC Skill Pack installation" width="760">
+  <img src="assets/terminal.svg" alt="dgtl dept skill pack installation" width="760">
 </a>
 
 <!--
@@ -51,23 +51,21 @@ git clone https://github.com/thatrebeccarae/dgtldept.git
 
 ## Why I Built This
 
-Claude Code is powerful out of the box — but it doesn't know the difference between a good and great abandoned cart flow. It can't tell you that a 1.2% click rate on your welcome series is below benchmark, or that your Shopify checkout completion rate signals a shipping cost surprise.
+Most marketing teams are either too small or too stretched. You need a Klaviyo specialist, a GA4 analyst, a Shopify conversion expert, a dashboard builder, a paid media strategist — but you've got maybe one or two people doing all of it.
 
-I kept having the same experience: Claude would give me a structurally correct answer that missed the domain context entirely. It would suggest a welcome flow without knowing that best-in-class DTC brands send 4-7 messages over 14 days, not 3 messages over a week. It would analyze GA4 data without knowing which metrics actually matter for e-commerce.
+Claude Code is powerful out of the box, but it doesn't know that a 1.2% click rate on your welcome series is below benchmark, or that your Shopify checkout completion rate signals a shipping cost surprise. It gives structurally correct answers that miss the domain context entirely.
 
-The insight was simple: **domain expertise beats general intelligence for operational work.** A senior DTC consultant doesn't just know the tools — they know the benchmarks, the patterns, the diagnostic frameworks that separate useful analysis from surface-level summaries.
-
-That's what these skills add. Real benchmarks. Real frameworks. The same diagnostic patterns I use in my own consulting work. Install what you need, ask in plain English, get implementation-ready answers.
+**dgtl dept fixes that.** Each skill pack gives Claude the same benchmarks, diagnostic frameworks, and platform expertise that a senior marketing consultant brings to an engagement. Install the department you need, ask in plain English, get implementation-ready answers.
 
 ## Who This Is For
 
-- **DTC marketers** who want Claude to actually understand their stack
-- **Email and CRM operators** running Klaviyo, Shopify, or GA4
+- **Solo marketers and small teams** who need specialist depth without specialist headcount
+- **DTC and e-commerce operators** running Klaviyo, Shopify, GA4, or Looker Studio
 - **Growth teams** that need cross-platform analysis, not platform-by-platform reports
 - **Agencies and consultants** who want to scale their diagnostic process
-- **Shopify merchants** trying to figure out why checkout completion is 31%
+- **Founders** who are tired of paying for audits they could run themselves
 
-If you want implementation-ready answers — not tutorials, not blog-post-level overviews — these skills are for you.
+If you want implementation-ready answers — not tutorials, not blog-post-level overviews — this is your department.
 
 ## Getting Started
 
@@ -157,7 +155,7 @@ Turn a LinkedIn data export into 9 interactive visualizations: D3.js network gra
 
 ### Coming Soon
 
-Additional marketing skill packs are in development — covering paid media, content strategy, and multi-channel attribution. [Star the repo](https://github.com/thatrebeccarae/dgtldept/stargazers) to get notified when they drop.
+The department is growing. Skill packs for Google Ads, Meta Ads, content strategy, and multi-channel attribution are in development. [Star the repo](https://github.com/thatrebeccarae/dgtldept/stargazers) to get notified when they drop.
 
 ## Example Prompts
 
@@ -310,6 +308,6 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Domain expertise > general intelligence.**<br>Install the skills. Ask in plain English. Get answers that actually know your stack.
+**Your marketing department lives here now.**<br>Install the skills. Ask in plain English. Get answers that actually know your stack.
 
 </div>
