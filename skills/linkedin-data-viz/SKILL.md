@@ -6,6 +6,15 @@ description: >
   message analysis, connection quality scoring, and career timelines.
   Use when the user mentions LinkedIn data export, LinkedIn visualization,
   LinkedIn network analysis, or wants to analyze their LinkedIn connections.
+license: MIT
+origin: custom
+author: Rebecca Rae Barton
+author_url: https://github.com/thatrebeccarae
+metadata:
+  version: 1.0.0
+  category: data-visualization
+  domain: linkedin
+  updated: 2026-02-26
 ---
 
 # LinkedIn Data Viz Skill
