@@ -1,0 +1,101 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck on .sh files
+        run: |
+          sh_files=$(find . -name "*.sh" -type f)
+          if [ -n "$sh_files" ]; then
+            echo "$sh_files" | xargs shellcheck
+          else
+            echo "No .sh files found, skipping shellcheck."
+          fi
+
+      - name: Validate YAML frontmatter in SKILL.md files
+        run: |
+          python3 << 'PYEOF'
+          import sys, glob, re
+
+          errors = []
+          skill_files = glob.glob("**/SKILL.md", recursive=True)
+
+          if not skill_files:
+              print("No SKILL.md files found, skipping frontmatter validation.")
+              sys.exit(0)
+
+          for path in skill_files:
+              with open(path) as f:
+                  content = f.read()
+
+              if not content.startswith("---"):
+                  errors.append(f"{path}: missing opening --- delimiter")
+                  continue
+
+              match = re.match(r"^---\n(.*?\n)---", content, re.DOTALL)
+              if not match:
+                  errors.append(f"{path}: missing closing --- delimiter")
+                  continue
+
+              # Basic YAML key: value check (no external deps)
+              frontmatter = match.group(1)
+              for i, line in enumerate(frontmatter.strip().splitlines(), 1):
+                  line = line.strip()
+                  if line and not line.startswith("#") and ":" not in line and not line.startswith("-"):
+                      errors.append(f"{path}: line {i} in frontmatter is not valid YAML: {line}")
+
+          if errors:
+              for e in errors:
+                  print(f"ERROR: {e}")
+              sys.exit(1)
+          else:
+              print(f"Validated {len(skill_files)} SKILL.md file(s) successfully.")
+          PYEOF
+
+      - name: Check required markdown files in each skill directory
+        run: |
+          python3 << 'PYEOF'
+          import sys, os, glob
+
+          skill_files = glob.glob("**/SKILL.md", recursive=True)
+
+          if not skill_files:
+              print("No skill directories found, skipping.")
+              sys.exit(0)
+
+          required = ["SKILL.md", "REFERENCE.md", "EXAMPLES.md"]
+          missing = []
+
+          for skill_path in skill_files:
+              skill_dir = os.path.dirname(skill_path)
+              for req in required:
+                  full = os.path.join(skill_dir, req)
+                  if not os.path.isfile(full):
+                      missing.append(full)
+
+          if missing:
+              for m in missing:
+                  print(f"MISSING: {m}")
+              sys.exit(1)
+          else:
+              dirs = set(os.path.dirname(s) for s in skill_files)
+              print(f"All required files present in {len(dirs)} skill directory(ies).")
+          PYEOF
