@@ -1,0 +1,133 @@
+{
+  "_description": "Slack Block Kit message templates for analytics pipeline. Used in n8n HTTP Request nodes calling chat.postMessage.",
+
+  "all_clear": {
+    "channel": "{{ $json.config.slack.channel }}",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "GA4 Status: {{ $json.client_name }} — All Clear",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          { "type": "mrkdwn", "text": "*Coverage:*\n{{ $json.coverage_pct }}% ({{ $json.implemented }}/{{ $json.total_spec_events }} events)" },
+          { "type": "mrkdwn", "text": "*Run Date:*\n{{ $json.run_date }}" }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": ":white_check_mark: All systems green. No missing events, no anomalies detected."
+        }
+      },
+      { "type": "divider" },
+      {
+        "type": "context",
+        "elements": [
+          { "type": "mrkdwn", "text": ":page_facing_up: Report: `{{ $json.vault_report_path }}`" }
+        ]
+      }
+    ]
+  },
+
+  "gaps_found": {
+    "channel": "{{ $json.config.slack.channel }}",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "GA4 Status: {{ $json.client_name }} — {{ $json.missing_events.length }} Event Gaps Found",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          { "type": "mrkdwn", "text": "*Coverage:*\n{{ $json.coverage_pct }}% ({{ $json.implemented }}/{{ $json.total_spec_events }} events)" },
+          { "type": "mrkdwn", "text": "*Run Date:*\n{{ $json.run_date }}" }
+        ]
+      },
+      { "type": "divider" },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": ":warning: *Missing Events*\n{{ $json.missing_preview_text }}"
+        }
+      },
+      {
+        "_comment": "Claude analysis section — blocks render empty-string fields as blank, so backwards-compatible when Claude fields are absent",
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "{{ $json.claude_gap_text ? ':robot_face: *Claude Analysis*\\n' + $json.claude_gap_text : '' }}"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "{{ $json.quick_wins_text ? ':zap: *Quick Wins*\\n' + $json.quick_wins_text : '' }}"
+        }
+      },
+      { "type": "divider" },
+      {
+        "type": "context",
+        "elements": [
+          { "type": "mrkdwn", "text": ":page_facing_up: Report: `{{ $json.vault_report_path }}`" },
+          { "type": "mrkdwn", "text": "{{ $json.prd_link_text || '' }}" }
+        ]
+      }
+    ]
+  },
+
+  "anomaly_alert": {
+    "channel": "{{ $json.config.slack.alert_channel }}",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "URGENT: {{ $json.client_name }} GA4 Anomaly Detected",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          { "type": "mrkdwn", "text": "*Anomalies:*\n{{ $json.anomalies.length }}" },
+          { "type": "mrkdwn", "text": "*Run Date:*\n{{ $json.run_date }}" }
+        ]
+      },
+      { "type": "divider" },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": ":rotating_light: *Anomaly Detail*\n{{ $json.anomaly_lines_text }}"
+        }
+      },
+      { "type": "divider" },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "{{ $json.claude_anomaly_text ? ':robot_face: *Claude Analysis*\\n' + $json.claude_anomaly_text : ':mag: *Context:* Events dropped to 0 that previously had significant volume. May indicate a tracking break, tag change, or real traffic shift. Verify in GA4 and GTM.' }}"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          { "type": "mrkdwn", "text": ":page_facing_up: Report: `{{ $json.vault_report_path }}`" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,1 +1,32 @@
+# .env and docker-compose references in documentation (not actual files)
 \.env
+docker-compose
+# Example/placeholder emails in docs
+@example\.com
+@yourdomain\.com
+@company\.com
+@coastalcandle\.com
+@project\.iam\.gserviceaccount\.com
+analytics-pipeline@
+\.iam\.gserviceaccount\.com
+# Example API keys in docs
+pk_your_key
+pk_test_
+sk_test_
+sk-ant-
+your[-_]key
+# Standard Docker/n8n paths in setup docs
+/home/node
+# GTM built-in trigger IDs (false positive as phone numbers)
+2147\d+
+# False positives: words matching Slack channel ID pattern
+CREDENTIALS
+CONVENTIONS
+CONTRIBUTING
+CUSTOM_EVENT
+# Example phone numbers
+1555\d+
+\+1555
+555-0
+# GA property IDs
+properties/\d+

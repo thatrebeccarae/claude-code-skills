@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "client-config.schema.json",
+  "title": "Client Analytics Agent Configuration",
+  "description": "Per-client configuration for the analytics agent pipeline",
+  "type": "object",
+  "required": ["client_id", "client_name", "ga4", "gtm", "vault", "slack", "schedule"],
+  "additionalProperties": false,
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Unique slug matching vault folder name"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Human-readable name for Slack messages"
+    },
+    "ga4": {
+      "type": "object",
+      "required": ["property_id", "credentials_file"],
+      "additionalProperties": false,
+      "properties": {
+        "property_id": {
+          "type": "string",
+          "pattern": "^[0-9]+$",
+          "description": "GA4 property ID (numeric)"
+        },
+        "credentials_file": {
+          "type": "string",
+          "description": "Path to service account JSON inside Docker container"
+        }
+      }
+    },
+    "gtm": {
+      "type": "object",
+      "required": ["account_id", "container_id", "credentials_file", "workspace_name_prefix", "tier"],
+      "additionalProperties": false,
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "description": "GTM account ID"
+        },
+        "container_id": {
+          "type": "string",
+          "description": "GTM container ID"
+        },
+        "credentials_file": {
+          "type": "string",
+          "description": "Path to service account JSON (can be same as GA4)"
+        },
+        "workspace_name_prefix": {
+          "type": "string",
+          "default": "claude",
+          "description": "Prefix for agent-created workspaces"
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["free", "360"],
+          "description": "GTM tier - affects workspace limit logic"
+        }
+      }
+    },
+    "vault": {
+      "type": "object",
+      "required": ["base_path", "event_spec", "monitoring_dir", "implementation_dir"],
+      "additionalProperties": false,
+      "properties": {
+        "base_path": {
+          "type": "string",
+          "description": "Root path for client analytics files in vault"
+        },
+        "event_spec": {
+          "type": "string",
+          "description": "Path to the event spec JSON file"
+        },
+        "monitoring_dir": {
+          "type": "string",
+          "description": "Directory for daily monitoring reports"
+        },
+        "implementation_dir": {
+          "type": "string",
+          "description": "Directory for PRDs and GTM changelogs"
+        }
+      }
+    },
+    "slack": {
+      "type": "object",
+      "required": ["channel", "alert_channel", "approvers"],
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Primary Slack channel for this client"
+        },
+        "alert_channel": {
+          "type": "string",
+          "description": "Channel for urgent/cross-client alerts"
+        },
+        "approvers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Slack usernames who can approve GTM changes"
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "required": ["monitoring", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "monitoring": {
+          "type": "string",
+          "description": "Cron expression for monitoring runs"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable schedule description"
+        }
+      }
+    }
+  }
+}

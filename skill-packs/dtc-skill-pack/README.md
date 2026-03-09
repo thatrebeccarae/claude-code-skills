@@ -16,7 +16,7 @@ Audit Klaviyo flows, diagnose Shopify conversion drop-offs, analyze GA4 traffic,
 <br>
 
 <a href="https://thatrebeccarae.github.io/dgtldept/skill-packs/dtc-skill-pack/demo/">
-  <img src="../../assets/terminal.svg" alt="DTC Skill Pack installation" width="720">
+  <img src="../../assets/terminal.png" alt="dgtldept terminal preview" width="720">
 </a>
 
 </div>
@@ -221,4 +221,4 @@ Klaviyo's AI features work within the Klaviyo UI for specific tasks (subject lin
 
 ## License
 
-[MIT](../../LICENSE) — built by [Rebecca Rae Barton](https://linkedin.com/in/rebeccaraebarton)
+MIT — see [LICENSE](../../LICENSE) for details.

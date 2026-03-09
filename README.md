@@ -2,16 +2,19 @@
 
 # dgtl dept*
 
-**A full marketing department for Claude Code.** Klaviyo, Shopify, GA4, Looker Studio, paid media, content strategy — install the skills you need and get expert-level analysis from your terminal.
+**A collection of Claude Code skill packs, specialized agents, and automated n8n agent workflows that give solo marketers and small DTC teams specialist-level expertise in Klaviyo, Shopify, GA4, Looker Studio, and GTM.** Vetted, tested, and verified — specialist depth without specialist headcount.
 
-[![Claude Code](https://img.shields.io/badge/Claude_Code-Skills-cc785c?style=for-the-badge&logo=anthropic&logoColor=white)](https://docs.anthropic.com/en/docs/claude-code)
-[![Substack](https://img.shields.io/badge/Substack-dgtl%20dept*-FF6719?style=for-the-badge&logo=substack&logoColor=white)](https://dgtldept.substack.com/welcome)
+<br>
+<br>
+
+[![Claude Code](https://img.shields.io/badge/Claude_Code-Tools-D97757?style=for-the-badge&logo=anthropic&logoColor=white)](https://docs.anthropic.com/en/docs/claude-code)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Rebecca%20Rae%20Barton-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/rebeccaraebarton)
 [![X](https://img.shields.io/badge/X-@rebeccarae-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/rebeccarae)
-[![Website](https://img.shields.io/badge/rebeccaraebarton.com-1C1C1C?style=for-the-badge&logo=google-chrome&logoColor=white)](https://rebeccaraebarton.com)
+[![Substack](https://img.shields.io/badge/Substack-dgtl%20dept*-FF6719?style=for-the-badge&logo=substack&logoColor=white)](https://dgtldept.substack.com/welcome)
+[![Website](https://img.shields.io/badge/rebeccaraebarton.com-000000?style=for-the-badge&logo=google--chrome&logoColor=white)](https://rebeccaraebarton.com)
 [![GitHub stars](https://img.shields.io/github/stars/thatrebeccarae/dgtldept?style=for-the-badge&logo=github&color=181717)](https://github.com/thatrebeccarae/dgtldept/stargazers)
-[![License](https://img.shields.io/badge/License-MIT-0A66C2?style=for-the-badge)](LICENSE)
-[![Clone](https://img.shields.io/badge/Clone-git%20clone-f78166?style=for-the-badge&logo=git&logoColor=white)](https://github.com/thatrebeccarae/dgtldept)
+[![License](https://img.shields.io/badge/License-MIT-353535?style=for-the-badge)](LICENSE)
+[![Clone](https://img.shields.io/badge/Clone-git%20clone-F05032?style=for-the-badge&logo=git&logoColor=white)](https://github.com/thatrebeccarae/dgtldept)
 
 <br>
 
@@ -24,11 +27,10 @@ git clone https://github.com/thatrebeccarae/dgtldept.git
 **Works on Mac, Windows, and Linux.**
 
 <br>
-
 <br>
 
 <a href="https://thatrebeccarae.github.io/dgtldept/skill-packs/dtc-skill-pack/demo/">
-  <img src="assets/terminal.svg" alt="dgtl dept skill pack installation" width="760">
+  <img src="assets/terminal.png" alt="dgtldept terminal preview" width="760">
 </a>
 
 <!--
@@ -44,7 +46,7 @@ git clone https://github.com/thatrebeccarae/dgtldept.git
 <br>
 <br>
 
-[Why I Built This](#why-i-built-this) · [Who This Is For](#who-this-is-for) · [Getting Started](#getting-started) · [How It Works](#how-it-works) · [Skill Packs](#skill-packs) · [Contributing](CONTRIBUTING.md)
+[Why I Built This](#why-i-built-this) · [Who This Is For](#who-this-is-for) · [What's Inside](#whats-inside) · [Skill Packs](#skill-packs) · [Agent Workflows](#agent-workflows) · [Getting Started](#getting-started) · [How It Works](#how-it-works) · [Example Prompts](#example-prompts) · [Configuration](#configuration) · [Security](#security) · [Troubleshooting](#troubleshooting) · [Documentation](#documentation) · [Contributing](#contributing) · [License](#license)
 
 </div>
 
@@ -52,11 +54,21 @@ git clone https://github.com/thatrebeccarae/dgtldept.git
 
 ## Why I Built This
 
-Most marketing teams are either too small or too stretched. You need a Klaviyo specialist, a GA4 analyst, a Shopify conversion expert, a dashboard builder, a paid media strategist — but you've got maybe one or two people doing all of it.
+Most "AI marketing" skills, agents, and tools I've seen launch lately are just wrappers with an up-charge — skills that don't work, agents that are anything but 'autonomous', or just repackaging capabilities your platforms already ship natively, with a dashboard and a subscription fee. 
 
-Claude Code is powerful out of the box, but it doesn't know that a 1.2% click rate on your welcome series is below benchmark, or that your Shopify checkout completion rate signals a shipping cost surprise. It gives structurally correct answers that miss the domain context entirely.
+I have sat inside these platforms every day for years — Klaviyo, Shopify, GA4, GTM, analytics stacks, orchestration layers — and now I'm building agents, deploying pipelines, auditing what's actually in the box. 
 
-**dgtl dept fixes that.** Each skill pack gives Claude the same benchmarks, diagnostic frameworks, and platform expertise that a senior marketing consultant brings to an engagement. Install the department you need, ask in plain English, get implementation-ready answers.
+**dgtl dept is a suite of specialized skills and proven workflows with built-in domain expertise.** No wrapper. No subscription. No dashboard selling you capabilities you already own. Just the focused knowledge, benchmarks, and diagnostic frameworks that make Claude Code useful for lean marketing teams — now open source, free, and built by someone who knows what a 1.2% welcome series click rate actually means.
+
+- **Skill packs** give Claude Code the same platform expertise a senior marketing consultant brings to an audit
+- **Agent workflows** are autonomous pipelines that monitor your GA4 properties, detect anomalies, and implement fixes via GTM — without you lifting a finger
+
+I built the department my clients needed and I use every day because sometimes those $70K+/year solutions just aren't worth it. Now anyone can `git clone` it.
+
+This is an active project and open-sourced as-is. Fork it, gut it, make it yours. Updates and new releases published regularly. 
+
+Install the function you need, ask questions in plain English, get real answers.
+
 
 ## Who This Is For
 
@@ -67,6 +79,13 @@ Claude Code is powerful out of the box, but it doesn't know that a 1.2% click ra
 - **Founders** who are tired of paying for audits they could run themselves
 
 If you want implementation-ready answers — not tutorials, not blog-post-level overviews — this is your department.
+
+## What's Inside
+
+| Category | What It Is | What's Available |
+|----------|-----------|------------------|
+| **[Skill Packs](skill-packs/)** | Claude Code skills that give Claude specialist marketing expertise | [DTC Skill Pack](skill-packs/dtc-skill-pack/) — 6 skills for e-commerce (Klaviyo, Shopify, GA4, Looker Studio, Pro Deck Builder) |
+| **[Agent Workflows](agent-workflows/)** | Autonomous pipelines that run on n8n + Claude, monitoring and acting without manual intervention | [Analytics Agents](agent-workflows/analytics-agents/) — GA4 monitoring → Claude analysis → GTM implementation |
 
 ## Getting Started
 
@@ -87,9 +106,10 @@ The wizard checks prerequisites, walks you through API key setup, installs depen
 <summary><strong>Manual install (skip the wizard)</strong></summary>
 
 ```bash
-# Copy all 6 skills to Claude Code
+# Run from the directory where you cloned the repo
+cd dgtldept
 for skill in klaviyo-analyst klaviyo-developer google-analytics shopify looker-studio pro-deck-builder; do
-  cp -r dgtldept/skill-packs/dtc-skill-pack/$skill ~/.claude/skills/
+  cp -r skill-packs/dtc-skill-pack/$skill ~/.claude/skills/
 done
 ```
 
@@ -97,23 +117,13 @@ See [GETTING_STARTED.md](skill-packs/dtc-skill-pack/GETTING_STARTED.md) for deta
 
 </details>
 
-<details>
-<summary><strong>LinkedIn Data Viz install</strong></summary>
-
-```bash
-git clone https://github.com/thatrebeccarae/dgtldept.git
-cp -r dgtldept/skills/linkedin-data-viz ~/.claude/skills/
-```
-
-Then say: **"Analyze my LinkedIn data export"**
-
-</details>
-
 ## How It Works
+
+### Skill Packs
 
 Claude Code skills are structured knowledge packs that load automatically when you invoke them. Each skill gives Claude specific domain expertise it doesn't have out of the box.
 
-### What a Skill Contains
+#### What a Skill Contains
 
 | File | Purpose |
 |------|---------|
@@ -122,7 +132,7 @@ Claude Code skills are structured knowledge packs that load automatically when y
 | **EXAMPLES.md** | Working examples with realistic prompts and expected output format |
 | **scripts/** | Utility scripts for setup, data fetching, health checks (where applicable) |
 
-### How Claude Uses Them
+#### How Claude Uses Them
 
 1. You ask a question in natural language (e.g., *"Audit my Klaviyo flows"*)
 2. Claude loads the relevant skill's SKILL.md, which contains the diagnostic framework
@@ -133,6 +143,21 @@ Claude Code skills are structured knowledge packs that load automatically when y
 > [!NOTE]
 > Skills work without MCP servers too. You can paste data, share screenshots, or use the included scripts to export data manually. The MCP server just makes it seamless.
 
+### Agent Workflows
+
+Agent workflows are autonomous n8n pipelines that use Claude as their reasoning engine - I run local to save on costs, but do what's best for you. Unlike skills (which respond when you ask), workflows run on a schedule and act independently.
+
+Each workflow includes:
+
+| Component | Purpose |
+|-----------|---------|
+| **n8n workflow JSON** | The pipeline definition — import into your n8n instance |
+| **Code node scripts** | JavaScript that handles API auth, data comparison, prompt construction, and API writes |
+| **JSON schemas** | Validation schemas for config files and event specs |
+| **Templates** | Report and documentation templates for generated output |
+
+Workflows use Claude via the Anthropic API (not Claude Code) — Claude Sonnet for deep analysis, Claude Haiku for fast classification.
+
 ## Skill Packs
 
 ### [DTC Skill Pack](skill-packs/dtc-skill-pack/) — 6 skills for e-commerce marketing
@@ -141,18 +166,31 @@ Claude Code skills are structured knowledge packs that load automatically when y
 
 | Skill | What Claude Can Do |
 |-------|-------------------|
-| **[Klaviyo Analyst](skill-packs/dtc-skill-pack/klaviyo-analyst/)** | 4-phase account audit, flow gap analysis, segment health, deliverability diagnostics, revenue attribution, three-tier recommendations with implementation specs |
+| **[Klaviyo Analyst](skill-packs/dtc-skill-pack/klaviyo-analyst/)** | Full Klaviyo audit — 4-phase account review, flow gap analysis, segment health, deliverability diagnostics, revenue attribution, three-tier recommendations with implementation specs |
 | **[Klaviyo Developer](skill-packs/dtc-skill-pack/klaviyo-developer/)** | Event schema design, SDK integration, webhook handling, rate limit strategy, catalog sync, integration health audit |
 | **[Shopify](skill-packs/dtc-skill-pack/shopify/)** | 12-step store audit, conversion funnel analysis, site speed diagnostics, marketing stack integration |
 | **[Google Analytics](skill-packs/dtc-skill-pack/google-analytics/)** | GA4 traffic analysis, channel comparison, conversion funnels, content performance |
 | **[Looker Studio](skill-packs/dtc-skill-pack/looker-studio/)** | Cross-platform dashboards via Google Sheets pipeline, DTC dashboard templates, calculated field library |
 | **[Pro Deck Builder](skill-packs/dtc-skill-pack/pro-deck-builder/)** | Polished HTML slide decks and PDF-ready reports with dark cover pages and warm light content slides |
 
-### [LinkedIn Data Viz](skills/linkedin-data-viz/) — Interactive career visualizations
+## Agent Workflows
 
-> [**View Live Demo**](https://thatrebeccarae.github.io/dgtldept/skills/linkedin-data-viz/demo/)
+Agent workflows are autonomous pipelines built on [n8n](https://n8n.io) + Claude that run on a schedule without manual intervention. They monitor, analyze, and act — then notify you with results.
 
-Turn a LinkedIn data export into 9 interactive visualizations: D3.js network graphs, Chart.js charts, career timelines. Includes onboarding wizard, dark theme, and privacy-safe sanitization for publishing.
+### [Analytics Agents](agent-workflows/analytics-agents/) — Autonomous GA4 monitoring + GTM implementation
+
+Your GA4 property monitored daily, gaps analyzed by Claude, and fixes implemented in GTM — automatically.
+
+| Stage | What Happens |
+|-------|-------------|
+| **Monitor** | Fetches all GA4 events daily, compares against your event spec |
+| **Analyze** | Claude Sonnet identifies gaps and recommends GTM implementations; Claude Haiku detects anomalies |
+| **Implement** | Creates GTM variables, triggers, and tags in an isolated workspace (unpublished until you review) |
+| **Notify** | Slack messages at every stage — all-clear, gaps found, anomalies detected, GTM resources created |
+
+Handles multiple GA4 properties — configure once per property, runs hands-off from there.
+
+See the [Analytics Agents README](agent-workflows/analytics-agents/README.md) and [Getting Started guide](agent-workflows/analytics-agents/GETTING_STARTED.md) for setup.
 
 ### Coming Soon
 
@@ -291,8 +329,8 @@ On macOS, `python` may point to Python 2. Use `python3` explicitly or install vi
 |----------|-------------|
 | [DTC Skill Pack README](skill-packs/dtc-skill-pack/README.md) | Skill details, architecture, MCP server setup, example prompts, FAQ |
 | [DTC Getting Started](skill-packs/dtc-skill-pack/GETTING_STARTED.md) | Step-by-step setup for each platform |
-| [LinkedIn Data Viz SKILL.md](skills/linkedin-data-viz/SKILL.md) | Wizard flow, visualization descriptions |
-| [LinkedIn Data Viz REFERENCE.md](skills/linkedin-data-viz/REFERENCE.md) | CSV schemas, parsing quirks, theme customization |
+| [Analytics Agents README](agent-workflows/analytics-agents/README.md) | GA4 monitoring pipeline architecture, setup, and security model |
+| [Analytics Agents Getting Started](agent-workflows/analytics-agents/GETTING_STARTED.md) | Step-by-step n8n + GA4 + GTM setup |
 | [CHANGELOG](CHANGELOG.md) | Version history and release notes |
 | [SECURITY](SECURITY.md) | Security design and vulnerability reporting |
 | [CONTRIBUTING](CONTRIBUTING.md) | How to contribute skills, report bugs, submit PRs |
@@ -303,12 +341,12 @@ Contributions are welcome — bug reports, documentation fixes, skill suggestion
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
 ---
 
-**Your marketing department lives here now.**<br>Install the skills. Ask in plain English. Get answers that actually know your stack.
+**Your marketing department lives here now.**<br>Install the skills. Deploy the workflows. Get specialist depth without specialist headcount.
 
 </div>
