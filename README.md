@@ -2,7 +2,7 @@
 
 # dgtl dept*
 
-**A collection of Claude Code skill packs, specialized agents, and automated n8n agent workflows that give solo marketers and small DTC teams specialist-level expertise in Klaviyo, Shopify, GA4, Looker Studio, Google Ads, Meta Ads, Microsoft Ads, Braze, and GTM.** Vetted, tested, and verified — specialist depth without specialist headcount.
+**25 open source Claude Code skills, specialized agents, and autonomous workflows for marketing teams.** Paid media, e-commerce, content, strategy, creative, reporting, and development — specialist depth without specialist headcount.
 
 <br>
 <br>
@@ -46,28 +46,26 @@ git clone https://github.com/thatrebeccarae/dgtldept.git
 <br>
 <br>
 
-[Why I Built This](#why-i-built-this) · [Who This Is For](#who-this-is-for) · [What's Inside](#whats-inside) · [Skill Packs](#skill-packs) · [Agents](#agents) · [Workflows](#workflows) · [Getting Started](#getting-started) · [How It Works](#how-it-works) · [Example Prompts](#example-prompts) · [Configuration](#configuration) · [Security](#security) · [Troubleshooting](#troubleshooting) · [Documentation](#documentation) · [Contributing](#contributing) · [License](#license)
+[Why This Exists](#why-this-exists) · [Who This Is For](#who-this-is-for) · [What's Inside](#whats-inside) · [Skills](#skills) · [Skill Packs](#skill-packs) · [Agents](#agents) · [Workflows](#workflows) · [Getting Started](#getting-started) · [How Skills Work](#how-skills-work) · [Example Prompts](#example-prompts) · [Configuration](#configuration) · [Security](#security) · [Troubleshooting](#troubleshooting) · [Documentation](#documentation) · [Contributing](#contributing) · [License](#license)
 
 </div>
 
 ---
 
-## Why I Built This
+## Why This Exists
 
-Most "AI marketing" skills, agents, and tools I've seen launch lately are just wrappers with an up-charge — skills that don't work, agents that are anything but 'autonomous', or just repackaging capabilities your platforms already ship natively, with a dashboard and a subscription fee. 
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's AI coding agent — it runs in your terminal and can read files, run commands, and work with APIs. These skills give it marketing expertise it doesn't have out of the box.
 
-I have sat inside these platforms every day for years — Klaviyo, Shopify, GA4, GTM, analytics stacks, orchestration layers — and now I'm building agents, deploying pipelines, auditing what's actually in the box. 
+Most "AI marketing" tools launching lately are wrappers with an up-charge — skills that don't work, agents that are anything but "autonomous," or repackaged capabilities your platforms already ship natively, sold back to you with a dashboard and a subscription fee.
 
-**dgtl dept is a suite of specialized skills and proven workflows with built-in domain expertise.** No wrapper. No subscription. No dashboard selling you capabilities you already own. Just the focused knowledge, benchmarks, and diagnostic frameworks that make Claude Code useful for lean marketing teams — now open source, free, and built by someone who knows what a 1.2% welcome series click rate actually means.
+**dgtl dept is a complete digital marketing skill set with built-in domain expertise.** No wrappers, no subscriptions, no dashboards selling you capabilities you already own. The focused knowledge, benchmarks, and diagnostic frameworks that make Claude Code useful for lean marketing teams — open source, free, and built from years inside Klaviyo, Shopify, GA4, GTM, analytics stacks, and orchestration layers.
 
 - **Skill packs** give Claude Code the same platform expertise a senior marketing consultant brings to an audit
-- **Agent workflows** are autonomous pipelines that monitor your GA4 properties, detect anomalies, and implement fixes via GTM — without you lifting a finger
+- **Agent workflows** are autonomous pipelines that monitor GA4 properties, detect anomalies, and implement fixes via GTM — without anyone lifting a finger
 
-I built the department my clients needed and I use every day because sometimes those $70K+/year solutions just aren't worth it. Now anyone can `git clone` it.
+This is the department that $70K+/year solutions try to sell you. Now anyone can `git clone` it.
 
-This is an active project and open-sourced as-is. Fork it, gut it, make it yours. Updates and new releases published regularly. 
-
-Install the function you need, ask questions in plain English, get real answers.
+Active project, open-sourced as-is. Fork it and make it yours — updates and new releases published regularly. Install what you need and ask questions in plain English.
 
 
 ## Who This Is For
@@ -75,19 +73,98 @@ Install the function you need, ask questions in plain English, get real answers.
 - **Solo marketers and small teams** who need specialist depth without specialist headcount
 - **DTC and e-commerce operators** running Klaviyo, Shopify, GA4, or Looker Studio
 - **Growth teams** that need cross-platform analysis, not platform-by-platform reports
-- **Agencies and consultants** who want to scale their diagnostic process
+- **Content marketers** who want research-backed, SEO-optimized content at scale
+- **Agencies and consultants** looking to scale their diagnostic and deliverable process
 - **Founders** who are tired of paying for audits they could run themselves
+- **Developers** working on marketing projects who want safe deployment practices
 
-If you want implementation-ready answers — not tutorials, not blog-post-level overviews — this is your department.
+Implementation-ready answers — not tutorials, not blog-post-level overviews.
 
 ## What's Inside
 
-| Category | What It Is | What's Available |
-|----------|-----------|------------------|
-| **[Skills](skills/)** | 11 Claude Code skills — install individually or as curated packs | Klaviyo, Shopify, GA4, Looker Studio, Google Ads, Meta Ads, Microsoft Ads, Account Structure, Braze, Pro Deck Builder |
-| **[Skill Packs](skill-packs/)** | Curated collections with setup guides and install wizards | [DTC Pack](skill-packs/dtc-pack.md) (6 skills) · [Paid Media Pack](skill-packs/paid-media-pack.md) (4 skills) |
-| **[Agents](agents/)** | 3 standalone agents — portable analysis logic, usable with or without n8n | [GA4 Monitor](agents/ga4-monitor/) · [GA4 Gap Analyzer](agents/ga4-gap-analyzer/) · [GTM Implementer](agents/gtm-implementer/) |
-| **[Workflows](workflows/)** | Autonomous n8n pipelines that wire agents together on a schedule | [GA4-GTM Pipeline](workflows/ga4-gtm-pipeline/) — daily monitoring → Claude analysis → GTM implementation |
+| Category | What It Is | Count |
+|----------|-----------|-------|
+| **[Skills](skills/)** | Claude Code skills — install individually or as packs | 25 skills |
+| **[Skill Packs](skill-packs/)** | Grouped collections with setup guides and install wizards | 6 packs |
+| **[Agents](agents/)** | Standalone agents — portable analysis logic, usable with or without n8n | 3 agents |
+| **[Workflows](workflows/)** | Autonomous n8n pipelines that wire agents together on a schedule | 1 pipeline |
+
+## Skills
+
+All 25 skills live in [`skills/`](skills/) — install individually or use a [skill pack](skill-packs/) to set up a related group.
+
+> [**View Live Demo**](https://thatrebeccarae.github.io/dgtldept/skill-packs/demo/) — See skills in action with example terminal output.
+
+### DTC & E-commerce
+
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **[Klaviyo Analyst](skills/klaviyo-analyst/)** | Full Klaviyo audit — 4-phase account review, flow gap analysis, segment health, deliverability diagnostics, revenue attribution with industry benchmarks |
+| **[Klaviyo Developer](skills/klaviyo-developer/)** | Event schema design, SDK integration, webhook handling, rate limit strategy, catalog sync |
+| **[Shopify](skills/shopify/)** | 12-step store audit, conversion funnel analysis, site speed diagnostics, marketing stack integration |
+| **[Google Analytics](skills/google-analytics/)** | GA4 traffic analysis, channel comparison, conversion funnels, content performance |
+| **[Looker Studio](skills/looker-studio/)** | Cross-platform dashboards via Google Sheets pipeline, DTC dashboard templates, calculated field library |
+| **[Braze](skills/braze/)** | Canvas audit, segmentation, cross-channel orchestration, data architecture, deliverability, IP warming |
+
+### Paid Media
+
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **[Google Ads](skills/google-ads/)** | Campaign auditing, Quality Score optimization, Performance Max, Shopping, bidding strategies, wasted spend identification |
+| **[Meta Ads](skills/facebook-ads/)** | Creative fatigue diagnosis, pixel/CAPI health, iOS 14.5+ attribution, Advantage+ campaign readiness |
+| **[Microsoft Ads](skills/microsoft-ads/)** | Google import optimization, LinkedIn Profile Targeting, UET tracking, Shopping campaigns, Clarity integration |
+| **[Account Structure Review](skills/account-structure-review/)** | Cross-platform structural audit — conversion volume thresholds, budget fragmentation, consolidation roadmaps |
+| **[Competitor Ads Analyst](skills/competitor-ads-analyst/)** | Competitor ad creative analysis from public ad libraries — messaging patterns, creative formats, positioning gaps |
+| **[Wasted Spend Finder](skills/wasted-spend-finder/)** | Systematic Google Ads and Meta waste analysis — produces uploadable exclusion lists with thematic categorization |
+
+### Content
+
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **[SEO Content Writer](skills/seo-content-writer/)** | SEO-optimized content with brand voice analysis — blog posts, social media, email campaigns, landing pages |
+| **[Content Workflow](skills/content-workflow/)** | End-to-end content pipeline: research → draft → editorial review → social distribution |
+| **[Email Composer](skills/email-composer/)** | Client outreach, deliverable handoffs, scope discussions, and follow-up cadence — with tone calibration per context |
+
+### Strategy & Research
+
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **[Market Research](skills/market-research/)** | Consulting-grade research reports (50+ pages) — Porter's Five Forces, PESTLE, SWOT, TAM/SAM/SOM, competitive positioning |
+| **[Research Digest](skills/research-digest/)** | Structured research briefs from RSS feeds and web sources — source synthesis, credibility assessment, content angles |
+| **[ICP Research](skills/icp-research/)** | Ideal customer profiles with pain points, objections, buying triggers, community research, and voice-of-customer extraction |
+
+### Creative & Design
+
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **[Frontend Design](skills/frontend-design/)** | Distinctive, production-grade web interfaces — typography, color theory, motion, spatial composition. Commits to a specific aesthetic direction, not generic defaults. |
+| **[Tech Diagram](skills/tech-diagram/)** | Technical architecture diagrams as standalone HTML — pipeline flows, layer stacks, component maps, timelines |
+| **[Remotion Video](skills/remotion-video/)** | Programmatic video production — spring animations, chart animations, scene transitions, audio sync |
+
+### Reporting & Deliverables
+
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **[Pro Deck Builder](skills/pro-deck-builder/)** | Polished HTML slide decks and PDF-ready reports — dark covers, warm light content, component library |
+| **[HTML Report Builder](skills/html-report-builder/)** | Multi-page HTML reports for consulting deliverables — KPI cards, data tables, callout boxes, recommendation cards |
+
+### Developer Tools
+
+| Skill | What Claude Can Do |
+|-------|-------------------|
+| **[Safe Push](skills/safe-push/)** | Pre-push hygiene — PII/secrets scanning, commit message audit, rate-limited pushing, allowlist support |
+| **[GitHub README](skills/github-readme/)** | Generate, audit, or update READMEs — detects repo type, selects badges, enforces structure standards |
+
+## Skill Packs
+
+Grouped collections with setup wizards for installing related skills together:
+
+- **[DTC Pack](skill-packs/dtc-pack.md)** — 6 skills for e-commerce (Klaviyo Analyst, Klaviyo Developer, Shopify, Google Analytics, Looker Studio, Pro Deck Builder)
+- **[Paid Media Pack](skill-packs/paid-media-pack.md)** — 6 skills for paid advertising (Google Ads, Meta Ads, Microsoft Ads, Competitor Ads Analyst, Wasted Spend Finder, Account Structure Review)
+- **[Content Pack](skill-packs/content-pack.md)** — 3 skills for content creation (SEO Content Writer, Content Workflow, Email Composer)
+- **[Strategy & Research Pack](skill-packs/strategy-pack.md)** — 3 skills for research and strategy (Market Research, ICP Research, Research Digest)
+- **[Creative & Design Pack](skill-packs/creative-pack.md)** — 3 skills for creative production (Frontend Design, Tech Diagram, Remotion Video)
+- **[Developer Tools Pack](skill-packs/dev-tools-pack.md)** — 2 skills for safe deployment and documentation (Safe Push, GitHub README)
 
 ## Getting Started
 
@@ -99,7 +176,7 @@ cd dgtldept
 cp -r skills/google-ads ~/.claude/skills/
 ```
 
-Install only the skills you need — each one works independently.
+Each skill works independently — install only the ones you need.
 
 ### Setup Wizard (for a full pack)
 
@@ -116,11 +193,9 @@ The wizard checks prerequisites, walks you through API key setup, installs depen
 > [!TIP]
 > See [DTC Getting Started](skill-packs/dtc-getting-started.md) or [Paid Media Getting Started](skill-packs/paid-media-getting-started.md) for detailed setup per platform.
 
-## How It Works
+## How Skills Work
 
-### Skill Packs
-
-Claude Code skills are structured knowledge packs that load automatically when you invoke them. Each skill gives Claude specific domain expertise it doesn't have out of the box.
+A Claude Code skill is a structured domain expertise file that loads into Claude automatically when invoked. Each skill contains diagnostic frameworks, industry benchmarks, and platform-specific reference data that Claude doesn't have out of the box — the kind of context that turns a general-purpose AI into a specialist.
 
 #### What a Skill Contains
 
@@ -146,36 +221,9 @@ Claude Code skills are structured knowledge packs that load automatically when y
 
 Agents are standalone analysis modules with portable logic — comparison engines, prompt builders, response parsers. Each agent works independently and can be used without n8n.
 
-Workflows are autonomous n8n pipelines that wire agents together on a schedule. I run n8n local to save on costs, but do what's best for you. Unlike skills (which respond when you ask), workflows run on a schedule and act independently.
+Workflows are autonomous n8n pipelines that wire agents together on a schedule. n8n runs locally here to save on costs, but cloud hosting works too. Unlike skills (which respond when you ask), workflows run on a schedule and act independently.
 
 Workflows use Claude via the Anthropic API (not Claude Code) — Claude Sonnet for deep analysis, Claude Haiku for fast classification.
-
-## Skills
-
-All 11 skills live in [`skills/`](skills/) — install individually or use a [skill pack](skill-packs/) to set up a curated group.
-
-> [**View Live Demo**](https://thatrebeccarae.github.io/dgtldept/skill-packs/demo/) — See skills in action with example terminal output.
-
-| Skill | What Claude Can Do |
-|-------|-------------------|
-| **[Klaviyo Analyst](skills/klaviyo-analyst/)** | Full Klaviyo audit — 4-phase account review, flow gap analysis, segment health, deliverability diagnostics, revenue attribution |
-| **[Klaviyo Developer](skills/klaviyo-developer/)** | Event schema design, SDK integration, webhook handling, rate limit strategy, catalog sync |
-| **[Shopify](skills/shopify/)** | 12-step store audit, conversion funnel analysis, site speed diagnostics, marketing stack integration |
-| **[Google Analytics](skills/google-analytics/)** | GA4 traffic analysis, channel comparison, conversion funnels, content performance |
-| **[Looker Studio](skills/looker-studio/)** | Cross-platform dashboards via Google Sheets pipeline, DTC dashboard templates, calculated field library |
-| **[Pro Deck Builder](skills/pro-deck-builder/)** | Polished HTML slide decks and PDF-ready reports with dark cover pages and warm light content slides |
-| **[Google Ads](skills/google-ads/)** | Campaign auditing, Quality Score optimization, PMax, Shopping, bidding strategies, wasted spend identification |
-| **[Meta Ads](skills/facebook-ads/)** | Creative fatigue diagnosis, pixel/CAPI health, iOS 14.5+ attribution, Advantage+ readiness |
-| **[Microsoft Ads](skills/microsoft-ads/)** | Google import optimization, LinkedIn Profile Targeting, UET tracking, Shopping campaigns, Clarity |
-| **[Account Structure Review](skills/account-structure-review/)** | Cross-platform structural audit — conversion volume thresholds, budget fragmentation, consolidation roadmaps |
-| **[Braze](skills/braze/)** | Canvas audit, segmentation, cross-channel orchestration, data architecture, deliverability, IP warming |
-
-### Skill Packs
-
-Curated collections with setup wizards and guides for getting a group of related skills running together:
-
-- **[DTC Pack](skill-packs/dtc-pack.md)** — 6 skills for e-commerce (Klaviyo Analyst, Klaviyo Developer, Shopify, Google Analytics, Looker Studio, Pro Deck Builder)
-- **[Paid Media Pack](skill-packs/paid-media-pack.md)** — 4 skills for paid advertising (Google Ads, Meta Ads, Microsoft Ads, Account Structure Review)
 
 ## Agents
 
@@ -195,7 +243,7 @@ Autonomous n8n pipelines that wire agents together on a schedule. They monitor, 
 
 ### [GA4-GTM Pipeline](workflows/ga4-gtm-pipeline/) — Daily GA4 monitoring + GTM implementation
 
-Your GA4 property monitored daily, gaps analyzed by Claude, and fixes implemented in GTM — automatically.
+GA4 tracking gaps cost you conversion data every day. This pipeline detects them automatically and patches them in GTM.
 
 | Stage | Agent | What Happens |
 |-------|-------|-------------|
@@ -208,24 +256,40 @@ Handles multiple GA4 properties — configure once per property, runs hands-off 
 
 See the [GA4-GTM Pipeline README](workflows/ga4-gtm-pipeline/README.md) and [Getting Started guide](workflows/ga4-gtm-pipeline/GETTING_STARTED.md) for setup.
 
-### Coming Soon
-
-The department is growing. Skill packs for content strategy and multi-channel attribution are in development. [Star the repo](https://github.com/thatrebeccarae/dgtldept/stargazers) to get notified when they drop.
-
 ## Example Prompts
 
+### DTC & E-commerce
 ```
 "Audit my Klaviyo flows and identify which essential flows I'm missing"
-
 "My checkout completion rate is 31% — what's causing the drop-off?"
-
 "Which traffic sources are driving the most conversions this month?"
+```
 
-"Plan a CRM dashboard reconciling Klaviyo and Shopify data"
+### Paid Media
+```
+"Analyze my Google Ads search terms and find wasted spend"
+"Pull competitor ads from Meta Ad Library for these 3 brands and find messaging gaps"
+"Run a cross-platform account structure review for Google, Meta, and Bing"
+```
 
+### Content & Strategy
+```
+"Build an ICP for our SaaS product targeting VP of Marketing at mid-market companies"
+"Write a 1,500-word SEO article targeting 'email marketing benchmarks for DTC brands'"
+"Generate a research brief on AI in email marketing from the last 30 days"
+```
+
+### Creative & Reporting
+```
 "Create a dark-mode deck summarizing this month's email performance"
+"Build an HTML audit report from these Klaviyo metrics"
+"Design a landing page for our analytics product — editorial aesthetic, not typical SaaS"
+```
 
-"Debug why my webhook events aren't triggering flows"
+### Developer Tools
+```
+"Safe push this branch to the public repo"
+"Generate a README for this repo"
 ```
 
 ## Configuration
@@ -345,8 +409,12 @@ On macOS, `python` may point to Python 2. Use `python3` explicitly or install vi
 |----------|-------------|
 | [DTC Pack](skill-packs/dtc-pack.md) | 6 e-commerce skills — overview, MCP setup, example prompts, FAQ |
 | [DTC Getting Started](skill-packs/dtc-getting-started.md) | Step-by-step setup for DTC platforms |
-| [Paid Media Pack](skill-packs/paid-media-pack.md) | 4 paid media skills — overview, example prompts, FAQ |
+| [Paid Media Pack](skill-packs/paid-media-pack.md) | 6 paid media skills — overview, example prompts, FAQ |
 | [Paid Media Getting Started](skill-packs/paid-media-getting-started.md) | Step-by-step setup for paid media platforms |
+| [Content Pack](skill-packs/content-pack.md) | 3 content skills — SEO writing, editorial pipelines, client email |
+| [Strategy & Research Pack](skill-packs/strategy-pack.md) | 3 strategy skills — market research, ICP development, research synthesis |
+| [Creative & Design Pack](skill-packs/creative-pack.md) | 3 creative skills — frontend design, tech diagrams, programmatic video |
+| [Developer Tools Pack](skill-packs/dev-tools-pack.md) | 2 dev tools — safe push, README generation |
 | [GA4-GTM Pipeline README](workflows/ga4-gtm-pipeline/README.md) | Pipeline architecture, agent orchestration, setup, and security model |
 | [GA4-GTM Pipeline Getting Started](workflows/ga4-gtm-pipeline/GETTING_STARTED.md) | Step-by-step n8n + GA4 + GTM setup |
 | [CHANGELOG](CHANGELOG.md) | Version history and release notes |
@@ -365,6 +433,6 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Your marketing department lives here now.**<br>Install the skills. Deploy the workflows. Get specialist depth without specialist headcount.
+**Your marketing department lives here now.**<br>Install the skills, deploy the workflows, and get to work.
 
 </div>
