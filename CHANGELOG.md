@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-03-13
+
+### Added
+
+- **14 new skills** across 5 categories:
+  - **Content**: SEO Content Writer, Content Workflow, Email Composer
+  - **Strategy & Research**: Market Research, ICP Research, Research Digest
+  - **Creative & Design**: Frontend Design, Tech Diagram, Remotion Video
+  - **Reporting & Deliverables**: HTML Report Builder
+  - **Developer Tools**: Safe Push, GitHub README
+  - **Paid Media**: Competitor Ads Analyst, Wasted Spend Finder
+- **4 new skill packs** with pack-specific taglines, "Who This Is For" sections, and FAQ:
+  - Content Pack (3 skills)
+  - Strategy & Research Pack (3 skills)
+  - Creative & Design Pack (3 skills)
+  - Developer Tools Pack (2 skills)
+
+### Changed
+
+- **Paid Media Pack** expanded from 4 to 6 skills (added Competitor Ads Analyst, Wasted Spend Finder)
+- **README rewritten**: 7 category tables, Claude Code definition for first-time visitors, "Why This Exists" replacing first-person "Why I Built This," heading hierarchy fixes, nav updated
+- **Skill Packs section** promoted to H2, "How It Works > Skill Packs" renamed to "How Skills Work" with AEO-ready skill definition
+- CONTRIBUTING.md frontmatter example updated to match actual SKILL.md schema
+- Total skill count: 11 → 25
+- Total skill packs: 2 → 6
+
 ## [1.2.0] - 2026-03-11
 
 ### Added

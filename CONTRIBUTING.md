@@ -36,12 +36,17 @@ Every skill needs at minimum:
 
 ```yaml
 ---
-skill: your-skill-name
-description: One-line description of what the skill does
-version: 1.0.0
+name: your-skill-name
+description: "One-line description of what the skill does"
+license: MIT
+origin: custom
 author: Your Name
-tags: [relevant, platform, tags]
-tools: [Bash, Read, Write]  # Tools the skill needs access to
+author_url: https://github.com/your-username
+metadata:
+  version: 1.0.0
+  category: paid-media | dtc | content | strategy | creative | reporting | dev-tools
+  domain: the-platform-or-focus-area
+  updated: YYYY-MM-DD
 ---
 ```
 
